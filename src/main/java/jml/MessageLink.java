@@ -97,7 +97,7 @@ public final class MessageLink
   }
 
   public void start( final Session session )
-      throws Exception
+    throws Exception
   {
     if( null == session ) throw invalid( "session must not be null" );
     m_isFrozen = true;
@@ -108,9 +108,9 @@ public final class MessageLink
       m_session = session;
 
       final Destination inChannel =
-          m_isSourceTopic ? m_session.createTopic( m_sourceName ) : m_session.createQueue( m_sourceName );
+        m_isSourceTopic ? m_session.createTopic( m_sourceName ) : m_session.createQueue( m_sourceName );
       final Destination outChannel =
-          m_isDestinationTopic ? m_session.createTopic( m_destinationName ) : m_session.createQueue( m_destinationName );
+        m_isDestinationTopic ? m_session.createTopic( m_destinationName ) : m_session.createQueue( m_destinationName );
       final Destination dmq = ( null != m_dmqName ) ? m_session.createQueue( m_dmqName ) : null;
 
       m_outProducer = m_session.createProducer( outChannel );
@@ -136,7 +136,7 @@ public final class MessageLink
   }
 
   public void stop()
-      throws Exception
+    throws Exception
   {
     try
     {
@@ -234,15 +234,14 @@ public final class MessageLink
       message.setStringProperty( "JMLOutChannelName", m_destinationName );
       message.setStringProperty( "JMLOutChannelType", m_isDestinationTopic ? "Topic" : "Queue" );
       m_dmqProducer.send( message,
-                        message.getJMSDeliveryMode(),
-                        message.getJMSPriority(),
-                        message.getJMSExpiration() );
+                          message.getJMSDeliveryMode(),
+                          message.getJMSPriority(),
+                          message.getJMSExpiration() );
     }
     catch( final Exception e )
     {
       log( "Failed to send message to DMQ. Error: " + e, e );
       throw new IllegalStateException( "Failed to send message to DMQ. Message: " + inMessage, t );
-
     }
   }
 
@@ -259,9 +258,9 @@ public final class MessageLink
     try
     {
       m_outProducer.send( outMessage,
-                        outMessage.getJMSDeliveryMode(),
-                        outMessage.getJMSPriority(),
-                        outMessage.getJMSExpiration() );
+                          outMessage.getJMSDeliveryMode(),
+                          outMessage.getJMSPriority(),
+                          outMessage.getJMSExpiration() );
     }
     catch( final Exception e )
     {
@@ -270,7 +269,7 @@ public final class MessageLink
   }
 
   private void ensureValidConfig()
-      throws Exception
+    throws Exception
   {
     if( null == m_sourceName ) throw invalid( "sourceName not specified" );
     else if( null == m_destinationName ) throw invalid( "sourceName not specified" );
