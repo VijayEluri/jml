@@ -1,5 +1,4 @@
-JML
----
+= JML
 
 JML grew out of the need to rapidly set up processors that consumed messages from one
 channel and produced messages on another channel. Typically the processor may apply some
@@ -13,8 +12,7 @@ format "Wildfire-1.0.xsd" from a topic named "Wildfire". The message coming out 
 "Wildfire-1.0.xsd" before being sent onto the "Wildfire" topic. The processor that does this
 is an example of perfect candidate for an instance of the JML MessageLink class.
 
-TODO
-----
+== TODO
 
 * Test MessageUtil to ensure headers are copied
 * Test MessageVerifier to ensure non text messages raise exceptions
