@@ -13,7 +13,7 @@ AMQ = ['org.apache.activemq:activemq-core:jar:5.3.2', 'commons-logging:commons-l
 
 desc 'JAva Message EXchange is an osgi based jms router in it' 's infancy'
 define 'jml' do
-  project.version = '0.1.1-SNAPSHOT'
+  project.version = '0.0.1-SNAPSHOT'
   project.group = 'jamex'
   compile.options.source = '1.6'
   compile.options.target = '1.6'
