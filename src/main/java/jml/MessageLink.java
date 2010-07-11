@@ -210,9 +210,7 @@ public final class MessageLink
     }
   }
 
-  private void handleFailure( final Message inMessage,
-                              final String reason,
-                              final Throwable t )
+  private void handleFailure( final Message inMessage, final String reason, final Throwable t )
   {
     log( reason, t );
     if( null == m_dmqProducer )
