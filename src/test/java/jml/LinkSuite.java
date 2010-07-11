@@ -1,4 +1,4 @@
-package jamex.link;
+package jml;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

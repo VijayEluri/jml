@@ -1,4 +1,4 @@
-package jamex.link;
+package jml;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;

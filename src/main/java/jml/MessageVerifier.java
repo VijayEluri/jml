@@ -1,4 +1,4 @@
-package jamex.link;
+package jml;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;

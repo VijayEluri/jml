@@ -21,9 +21,9 @@ define 'jml' do
 
   compile.with JMS
   test.with AMQ
-  test.include 'jamex.link.LinkSuite'
+  test.include 'jml.LinkSuite'
   package(:bundle).tap do |bnd|
-    bnd['Export-Package'] = "jamex.link.*;version=#{version}"
+    bnd['Export-Package'] = "jml.*;version=#{version}"
   end
   package(:sources)
   package(:javadoc)

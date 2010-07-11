@@ -1,4 +1,4 @@
-package jamex.link;
+package jml;
 
 import java.net.URL;
 import javax.jms.Message;

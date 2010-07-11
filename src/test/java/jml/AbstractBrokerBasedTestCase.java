@@ -1,4 +1,4 @@
-package jamex.link;
+package jml;
 
 import java.util.LinkedList;
 import javax.jms.Connection;
