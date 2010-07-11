@@ -1,11 +1,6 @@
 /target
 /reports
-/jamex.iws
-/jamex.ipr
-/jamex.iml
-/com.sun.messaging.mq.imq.iml
-/connection/connection.iml
-/dist/dist.iml
-/link/link.iml
-/routes/routes.iml
-/common/common.iml
+/jml.iws
+/jml.ipr
+/jml.iml
+
