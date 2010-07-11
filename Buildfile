@@ -11,7 +11,7 @@ repositories.remote << Buildr::Bnd.remote_repository
 JMS = 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar:1.1.1'
 AMQ = ['org.apache.activemq:activemq-core:jar:5.3.2', 'commons-logging:commons-logging:jar:1.1', 'org.apache.geronimo.specs:geronimo-j2ee-management_1.0_spec:jar:1.0']
 
-desc 'JAva Message EXchange is an osgi based jms router in it' 's infancy'
+desc 'JML is a library that routes JMS messages between destinations, validating and transforming content whilst routing the messages'
 define 'jml' do
   project.version = '0.0.1'
   project.group = 'realityforge'
