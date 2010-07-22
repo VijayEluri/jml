@@ -193,6 +193,10 @@ public final class MessageLink
 
   private void doMessage( final Message message )
   {
+    if( LOG.isLoggable( Level.FINE ) )
+    {
+      log( Level.FINE, "Starting to process message: " + message, null );
+    }
     try
     {
       if( null != m_inputVerifier ) m_inputVerifier.verifyMessage( message );
@@ -217,6 +221,10 @@ public final class MessageLink
     if( null != output )
     {
       send( message, output );
+    }
+    if( LOG.isLoggable( Level.FINE ) )
+    {
+      log( Level.FINE, "Completed processing of message: " + message, null );
     }
   }
 
