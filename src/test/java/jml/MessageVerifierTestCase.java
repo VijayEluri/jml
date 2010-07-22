@@ -2,6 +2,7 @@ package jml;
 
 import java.net.URL;
 import java.util.regex.Pattern;
+import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.xml.XMLConstants;
 import static org.junit.Assert.*;
@@ -25,17 +26,38 @@ public class MessageVerifierTestCase
       fail( "Expected to be able to verify message but got " + e );
     }
 
+    boolean fail;
+
+    final Message mapMessage = createSession().createMapMessage();
     try
     {
-      MessageVerifier.newRegexVerifier( Pattern.compile( "Not.*Message" ) ).verifyMessage( message );
-      fail( "Expected to not be able to verify message" );
+      MessageVerifier.newRegexVerifier( Pattern.compile( ".*Message" ) ).verifyMessage( mapMessage );
+      fail = true;
     }
     catch( final Exception e )
     {
+      fail = false;
+      assertEquals( "e.getMessage()",
+                    "Message with ID = " + mapMessage.getJMSMessageID() +
+                    " is not of the expected type javax.jms.TextMessage. Actual Message Type: " +
+                    mapMessage.getClass().getName(),
+                    e.getMessage() );
+    }
+    if( fail ) fail( "Expected to not be able to verify map message" );
+
+    try
+    {
+      MessageVerifier.newRegexVerifier( Pattern.compile( "Not.*Message" ) ).verifyMessage( message );
+      fail = true;
+    }
+    catch( final Exception e )
+    {
+      fail = false;
       assertEquals( "e.getMessage()",
                     "Message with ID = " + message.getJMSMessageID() + " failed to match pattern \"Not.*Message\".",
                     e.getMessage() );
     }
+    if( fail ) fail( "Expected to not be able to verify message with bad pattern" );
   }
 
   @Test
@@ -60,7 +82,6 @@ public class MessageVerifierTestCase
     }
     catch( final Exception e )
     {
-      e.printStackTrace();
       fail( "Expected to be able to verify message but got " + e );
     }
 
@@ -71,36 +92,58 @@ public class MessageVerifierTestCase
     }
     catch( final Exception e )
     {
-      e.printStackTrace();
       fail( "Expected to be able to verify message but got " + e );
     }
+
+    boolean fail;
+
+    final Message mapMessage = createSession().createMapMessage();
+    try
+    {
+      MessageVerifier.newXSDVerifier( url ).verifyMessage( mapMessage );
+      fail = true;
+    }
+    catch( final Exception e )
+    {
+      fail = false;
+      assertEquals( "e.getMessage()",
+                    "Message with ID = " + mapMessage.getJMSMessageID() +
+                    " is not of the expected type javax.jms.TextMessage. Actual Message Type: " +
+                    mapMessage.getClass().getName(),
+                    e.getMessage() );
+    }
+    if( fail ) fail( "Expected to not be able to verify map message" );
 
     try
     {
       message = createSession().createTextMessage( "<a xorderid=\"x\"/>" );
       MessageVerifier.newXSDVerifier( url ).verifyMessage( message );
-      fail( "Expected to not be able to verify message" );
+      fail = true;
     }
     catch( final Exception e )
     {
+      fail = false;
       assertEquals( "e.getMessage()",
                     "Message with ID = " + message.getJMSMessageID() +
                     " failed to match XSD loaded from " + url + ".",
                     e.getMessage() );
     }
+    if( fail ) fail( "Expected to not be able to verify message" );
 
     try
     {
       message = createSession().createTextMessage( "<a xorderid=\"x\"/>" );
       MessageVerifier.newSchemaBasedVerifier( XMLConstants.W3C_XML_SCHEMA_NS_URI, url ).verifyMessage( message );
-      fail( "Expected to not be able to verify message" );
+      fail = true;
     }
     catch( final Exception e )
     {
+      fail = false;
       assertEquals( "e.getMessage()",
                     "Message with ID = " + message.getJMSMessageID() +
                     " failed to match Schema loaded from " + url + ".",
                     e.getMessage() );
     }
+    if( fail ) fail( "Expected to not be able to verify message" );
   }
 }

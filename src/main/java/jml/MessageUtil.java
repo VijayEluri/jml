@@ -16,10 +16,17 @@ public final class MessageUtil
     }
     else
     {
-      throw new IllegalArgumentException( "Message type " + message.getJMSType() +
-                                          " is not of the expected type " + type.getName() +
-                                          ". Message: " + message );
+      final String errorMessage =
+        errorMessageFor( message ) + " is not of the expected type " + type.getName() +
+        ". Actual Message Type: " + message.getClass().getName();
+      throw new Exception( errorMessage );
     }
+  }
+
+  static String errorMessageFor( final Message message )
+    throws Exception
+  {
+    return "Message with ID = " + message.getJMSMessageID();
   }
 
   public static void copyMessageHeaders( final Message from, final Message to )

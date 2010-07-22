@@ -15,7 +15,6 @@ is an example of perfect candidate for an instance of the JML MessageLink class.
 == TODO
 
 * Test MessageUtil to ensure headers are copied
-* Test MessageVerifier to ensure non text messages raise exceptions
 * Test MessageTransformer to ensure all headers are copied as appropriate
 * Test all the different combinations supported by MessageLink
  - Test DMQ works as expected

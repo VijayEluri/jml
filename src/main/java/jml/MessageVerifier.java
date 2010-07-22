@@ -91,7 +91,7 @@ public abstract class MessageVerifier
       catch( final Exception e )
       {
         final String errorMessage =
-          "Message with ID = " + message.getJMSMessageID() + " failed to match " + m_noMatchMessage + ".";
+          MessageUtil.errorMessageFor( message ) + " failed to match " + m_noMatchMessage + ".";
         throw new Exception( errorMessage, e );
       }
     }
@@ -113,8 +113,7 @@ public abstract class MessageVerifier
       if( !pattern.matcher( textMessage.getText() ).matches() )
       {
         final String errorMessage =
-          "Message with ID = " + message.getJMSMessageID() +
-          " failed to match pattern \"" + pattern.pattern() + "\".";
+          MessageUtil.errorMessageFor( message ) + " failed to match pattern \"" + pattern.pattern() + "\".";
         throw new Exception( errorMessage );
       }
     }
