@@ -179,7 +179,16 @@ public class MessageLinkTestCase
 
     produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
     collector.expectMessageCount( 4 );
-    dmqCollector.expectMessageCount( 1 );
+    final Message message = dmqCollector.expectMessageCount( 1 ).iterator().next();
+
+    assertMessageProperty( message, "JMLMessageLink", "TestLink" );
+    assertMessagePropertyNotNull( message, "JMLFailureReason" );
+    assertMessageProperty( message, "JMLInChannelName", TestHelper.QUEUE_1_NAME );
+    assertMessageProperty( message, "JMLInChannelType", "Queue" );
+    assertMessagePropertyNull( message, "JMLInSubscriptionName" );
+    assertMessageProperty( message, "JMLOutChannelName", TestHelper.QUEUE_2_NAME );
+    assertMessageProperty( message, "JMLOutChannelType", "Queue" );
+    assertMessageProperty( message, "JMLOriginalMessageType", "TextMessage" );
     link.stop();
   }
 
@@ -203,7 +212,7 @@ public class MessageLinkTestCase
     link.stop();
   }
 
-    @Test
+  @Test
   public void transferFromInputQueueToOutputQueueWithOutputVerifier()
     throws Exception
   {
@@ -220,7 +229,16 @@ public class MessageLinkTestCase
 
     produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
     collector.expectMessageCount( 4 );
-    dmqCollector.expectMessageCount( 1 );
+    final Message message = dmqCollector.expectMessageCount( 1 ).iterator().next();
+
+    assertMessageProperty( message, "JMLMessageLink", "TestLink" );
+    assertMessagePropertyNotNull( message, "JMLFailureReason" );
+    assertMessageProperty( message, "JMLInChannelName", TestHelper.QUEUE_1_NAME );
+    assertMessageProperty( message, "JMLInChannelType", "Queue" );
+    assertMessagePropertyNull( message, "JMLInSubscriptionName" );
+    assertMessageProperty( message, "JMLOutChannelName", TestHelper.QUEUE_2_NAME );
+    assertMessageProperty( message, "JMLOutChannelType", "Queue" );
+    assertMessageProperty( message, "JMLOriginalMessageType", "TextMessage" );
     link.stop();
   }
 
@@ -243,7 +261,7 @@ public class MessageLinkTestCase
     dmqCollector.expectMessageCount( 0 );
     link.stop();
   }
-  
+
   private static void publishMessage( final Session session,
                                       final Destination destination,
                                       final String messageContent,
@@ -291,5 +309,23 @@ public class MessageLinkTestCase
     throws JMSException
   {
     return topic ? session.createTopic( channelName ) : session.createQueue( channelName );
+  }
+
+  private void assertMessageProperty( final Message message, final String key, final Object value )
+    throws JMSException
+  {
+    assertEquals( "Header: " + key, value, message.getObjectProperty( key ) );
+  }
+
+  private void assertMessagePropertyNotNull( final Message message, final String key )
+    throws JMSException
+  {
+    assertNotNull( "Header: " + key, message.getObjectProperty( key ) );
+  }
+
+  private void assertMessagePropertyNull( final Message message, final String key )
+    throws JMSException
+  {
+    assertNull( "Header: " + key, message.getObjectProperty( key ) );
   }
 }
