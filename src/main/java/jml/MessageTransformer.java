@@ -33,6 +33,32 @@ public abstract class MessageTransformer
     throws Exception;
 
   /**
+   * Copy the headers and properties from the source message to the destination message.
+   */
+  protected final void copyMessageHeaders( final Message source, final Message destination )
+    throws JMSException
+  {
+    MessageUtil.copyMessageHeaders( source, destination );
+  }
+
+  /**
+   * Return an exception for message, with specified problem and exception
+   */
+  protected final Exception exceptionFor( final Message message, final String problem, final Exception e )
+    throws Exception
+  {
+    return MessageUtil.exceptionFor( message, problem, e );
+  }
+
+  /**
+   * Cast message to specified type, raising an exception if not possible.
+   */
+  protected final <T> T castToType( final Message message, final Class<T> type )
+    throws Exception
+  {
+    return MessageUtil.castToType( message, type );
+  }
+  /**
    * Create a transformer that expects an XML formatted TextMessage and attempts to
    * apply an XSLT transform. Uses the underlying javax.xml.transform API. 
    *
@@ -62,23 +88,30 @@ public abstract class MessageTransformer
     public Message transformMessage( final Session session, final Message message )
       throws Exception
     {
-      final TextMessage textMessage = MessageUtil.castToType( message, TextMessage.class );
+      final TextMessage textMessage = castToType( message, TextMessage.class );
       final String text = transformText( textMessage );
 
       final TextMessage result = session.createTextMessage( text );
-      MessageUtil.copyMessageHeaders( textMessage, result );
+      copyMessageHeaders( textMessage, result );
 
       return result;
     }
 
     private String transformText( final TextMessage textMessage )
-      throws JMSException, TransformerException
+      throws Exception
     {
-      final Source xmlSource = new StreamSource( new StringReader( textMessage.getText() ) );
-      final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      final Result result = new StreamResult( baos );
-      m_transformer.transform( xmlSource, result );
-      return baos.toString();
+      try
+      {
+        final Source xmlSource = new StreamSource( new StringReader( textMessage.getText() ) );
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final Result result = new StreamResult( baos );
+        m_transformer.transform( xmlSource, result );
+        return baos.toString();
+      }
+      catch( final TransformerException te )
+      {
+        throw exceptionFor( textMessage, "failed to transform text", te );
+      }
     }
   }
 }

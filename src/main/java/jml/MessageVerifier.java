@@ -25,6 +25,24 @@ public abstract class MessageVerifier
   public abstract void verifyMessage( Message message ) throws Exception;
 
   /**
+   * Cast message to specified type, raising an exception if not possible.
+   */
+  protected final <T> T castToType( final Message message, final Class<T> type )
+    throws Exception
+  {
+    return MessageUtil.castToType( message, type );
+  }
+
+  /**
+   * Return an exception for message, with specified problem and exception
+   */
+  protected final Exception exceptionFor( final Message message, final String problem, final Exception e )
+    throws Exception
+  {
+    return MessageUtil.exceptionFor( message, problem, e );
+  }
+
+  /**
    * Create a verifier that expects expects a TextMessage with content
    * matching XSD specified at URL.
    */
@@ -83,16 +101,14 @@ public abstract class MessageVerifier
 
     public void verifyMessage( final Message message ) throws Exception
     {
-      final TextMessage textMessage = MessageUtil.castToType( message, TextMessage.class );
+      final TextMessage textMessage = castToType( message, TextMessage.class );
       try
       {
         m_validator.validate( new StreamSource( new ByteArrayInputStream( textMessage.getText().getBytes() ) ) );
       }
       catch( final Exception e )
       {
-        final String errorMessage =
-          MessageUtil.errorMessageFor( message ) + " failed to match " + m_noMatchMessage + ".";
-        throw new Exception( errorMessage, e );
+        throw exceptionFor( message, "failed to match " + m_noMatchMessage + ".", e );
       }
     }
   }
@@ -109,12 +125,10 @@ public abstract class MessageVerifier
 
     public void verifyMessage( final Message message ) throws Exception
     {
-      final TextMessage textMessage = MessageUtil.castToType( message, TextMessage.class );
+      final TextMessage textMessage = castToType( message, TextMessage.class );
       if( !pattern.matcher( textMessage.getText() ).matches() )
       {
-        final String errorMessage =
-          MessageUtil.errorMessageFor( message ) + " failed to match pattern \"" + pattern.pattern() + "\".";
-        throw new Exception( errorMessage );
+        throw exceptionFor( message, "failed to match pattern \"" + pattern.pattern() + "\".", null );
       }
     }
   }

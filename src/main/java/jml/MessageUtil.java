@@ -4,11 +4,14 @@ import java.util.Enumeration;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public final class MessageUtil
+/**
+ * Class containing utility methods.
+ */
+final class MessageUtil
 {
   @SuppressWarnings( { "unchecked" } )
   static <T> T castToType( final Message message, final Class<T> type )
-      throws Exception
+    throws Exception
   {
     if( type.isInstance( message ) )
     {
@@ -17,23 +20,22 @@ public final class MessageUtil
     else
     {
       final String errorMessage =
-        errorMessageFor( message ) + " is not of the expected type " + type.getName() +
-        ". Actual Message Type: " + message.getClass().getName();
-      throw new Exception( errorMessage );
+        "is not of the expected type " + type.getName() + ". Actual Message Type: " + message.getClass().getName();
+      throw exceptionFor( message, errorMessage, null );
     }
   }
 
-  static String errorMessageFor( final Message message )
+  static Exception exceptionFor( final Message message, final String description, final Exception e )
     throws Exception
   {
-    return "Message with ID = " + message.getJMSMessageID();
+    return new Exception( "Message with ID = " + message.getJMSMessageID() + " " + description, e );
   }
 
-  public static void copyMessageHeaders( final Message from, final Message to )
-      throws JMSException
+  static void copyMessageHeaders( final Message from, final Message to )
+    throws JMSException
   {
     //set the developer assigned headers
-    to.setJMSCorrelationID(from.getJMSCorrelationID());
+    to.setJMSCorrelationID( from.getJMSCorrelationID() );
     to.setJMSReplyTo( from.getJMSReplyTo() );
     to.setJMSType( from.getJMSType() );
 

@@ -25,8 +25,7 @@ class TestMessageVerifier
     final int value = message.getIntProperty( TestHelper.HEADER_KEY );
     if( value > m_limit )
     {
-      throw new Exception( MessageUtil.errorMessageFor( message ) + " has header value = " +
-                           value + " that exceeds " + m_limit );
+      throw MessageUtil.exceptionFor( message, "has header value = " + value + " that exceeds " + m_limit, null );
     }
   }
 }
