@@ -17,5 +17,4 @@ is an example of perfect candidate for an instance of the JML MessageLink class.
 * Test MessageUtil to ensure headers are copied
 * Test MessageTransformer to ensure all headers are copied as appropriate
 * Document MessageLink with oodles of examples
-* Add MessageEndpoint that receives a message, optionally has a DMQ if handling
-  fails and input verifier. Will share code with MessageLink
+* Add Test for subclasses of AbstractMessageEndpoint

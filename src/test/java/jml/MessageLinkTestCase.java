@@ -19,7 +19,7 @@ public class MessageLinkTestCase
   @Before
   public void turnOffLogging()
   {
-    Logger.getLogger( MessageLink.class.getName() ).setLevel( Level.OFF );
+    MessageLink.LOG.setLevel( Level.OFF );
     // Turn off messages that result when verifier/transformer fails but no DMQ set
     Logger.getLogger( "org.apache.activemq.ActiveMQMessageConsumer" ).setLevel( Level.OFF );
   }
