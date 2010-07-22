@@ -213,6 +213,32 @@ public class MessageLinkTestCase
   }
 
   @Test
+  public void transferMessageLinkOrdering()
+    throws Exception
+  {
+    final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
+    final MessageLink link = new MessageLink();
+    link.setInputQueue( TestHelper.QUEUE_1_NAME, null );
+    link.setOutputQueue( TestHelper.QUEUE_2_NAME );
+    final TestMessageVerifier inputVerifier = new TestMessageVerifier( 3 );
+    link.setInputVerifier( inputVerifier );
+    final TestMessageTransformer transformer = new TestMessageTransformer( false );
+    link.setTransformer( transformer );
+    final TestMessageVerifier outputVerifier = new TestMessageVerifier( 3 );
+    link.setOutputVerifier( outputVerifier );
+    link.setName( "TestLink" );
+    link.start( createSession() );
+
+    produceMessages( TestHelper.QUEUE_1_NAME, false, 1 );
+    collector.expectMessageCount( 1 );
+
+    assertTrue("inputVerifier < transformer", inputVerifier.getLastMessageTime() < transformer.getLastMessageTime() );
+    assertTrue("transformer < outputVerifier", transformer.getLastMessageTime() < outputVerifier.getLastMessageTime() );
+
+    link.stop();
+  }
+
+  @Test
   public void transferFromInputQueueToOutputQueueWithOutputVerifier()
     throws Exception
   {
