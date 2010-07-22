@@ -19,8 +19,13 @@ import javax.jms.Topic;
 
 public final class MessageLink
 {
+  ///Prefix for queue type channels
+  public static final String QUEUE_PREFIX = "queue://";
+  ///Prefix for topic type channels
+  public static final String TOPIC_PREFIX = "topic://";
+
   private static final Logger LOG = Logger.getLogger( MessageLink.class.getName() );
-  
+
   private String m_name;
   private String m_sourceName;
   private String m_subscriptionName;
@@ -48,38 +53,21 @@ public final class MessageLink
     m_name = name;
   }
 
-  public void setInputQueue( final String name, final String selector )
+  public void setInputChannel( final String channelName, final String subscription, final String selector )
   {
-    ensureEditable();
-    m_sourceName = name;
-    m_isSourceTopic = false;
-    m_subscriptionName = null;
-    m_selector = selector;
-  }
-
-  public void setInputTopic( final String name, final String subscription, final String selector )
-  {
-    ensureEditable();
-    if( null == name ) throw new NullPointerException( "name" );
-    m_sourceName = name;
-    m_isSourceTopic = true;
+    if( null == channelName ) throw new NullPointerException( "channelName" );
+    if( null != subscription && !channelName.startsWith( TOPIC_PREFIX ) )
+    {
+      throw new IllegalStateException( "Channels supplied with subscriptions must be topics" );
+    }
+    setChannel( channelName, true );
     m_subscriptionName = subscription;
     m_selector = selector;
   }
 
-  public void setOutputQueue( final String name )
+  public void setOutputChannel( final String channelName )
   {
-    ensureEditable();
-    if( null == name ) throw new NullPointerException( "name" );
-    m_destinationName = name;
-    m_isDestinationTopic = false;
-  }
-
-  public void setOutputTopic( final String name )
-  {
-    ensureEditable();
-    m_destinationName = name;
-    m_isDestinationTopic = true;
+    setChannel( channelName, false );
   }
 
   public void setDmqName( final String dmqName )
@@ -338,14 +326,14 @@ public final class MessageLink
   }
 
   static Message cloneMessageForDMQ( final Session session, final Message from )
-      throws Exception
+    throws Exception
   {
     final Message to;
     if( from instanceof TextMessage )
     {
       to = session.createTextMessage( ( (TextMessage)from ).getText() );
     }
-    else if ( from instanceof MapMessage )
+    else if( from instanceof MapMessage )
     {
       final MapMessage fromMessage = (MapMessage)from;
       final Enumeration names = fromMessage.getMapNames();
@@ -357,7 +345,7 @@ public final class MessageLink
       }
       to = toMessage;
     }
-    else if ( from instanceof BytesMessage )
+    else if( from instanceof BytesMessage )
     {
       final BytesMessage fromMessage = (BytesMessage)from;
       final BytesMessage toMessage = session.createBytesMessage();
@@ -368,7 +356,7 @@ public final class MessageLink
       }
       to = toMessage;
     }
-    else if ( from instanceof ObjectMessage )
+    else if( from instanceof ObjectMessage )
     {
       final ObjectMessage fromMessage = (ObjectMessage)from;
       // Warning - this assumes that the object can be deserialized
@@ -383,6 +371,38 @@ public final class MessageLink
 
     MessageUtil.copyMessageHeaders( from, to );
     return to;
+  }
+
+  private void setChannel( final String channelName, final boolean isSourceChannel )
+  {
+    if( null == channelName ) throw new NullPointerException( "channelName" );
+    ensureEditable();
+    final String channel;
+    final boolean isTopic;
+    if( channelName.startsWith( QUEUE_PREFIX ) )
+    {
+      channel = channelName.substring( QUEUE_PREFIX.length() );
+      isTopic = false;
+    }
+    else if( channelName.startsWith( TOPIC_PREFIX ) )
+    {
+      channel = channelName.substring( TOPIC_PREFIX.length() );
+      isTopic = true;
+    }
+    else
+    {
+      throw new IllegalStateException( "Invalid channel specification " + channelName );
+    }
+    if( isSourceChannel )
+    {
+      m_sourceName = channel;
+      m_isSourceTopic = isTopic;
+    }
+    else
+    {
+      m_destinationName = channel;
+      m_isDestinationTopic = isTopic;
+    }
   }
 
   private class LinkMessageListener implements MessageListener
