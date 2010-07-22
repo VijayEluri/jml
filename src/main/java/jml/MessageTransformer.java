@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamSource;
 
 /**
  * Abstract class for services that transform one messages.
- * Instances of this class should be idempotent and thread-safe.
+ * Instances of this class should be stateless and thread-safe.
  */
 public abstract class MessageTransformer
 {

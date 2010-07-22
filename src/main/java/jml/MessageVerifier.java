@@ -13,7 +13,7 @@ import javax.xml.validation.Validator;
 
 /**
  * Abstract class used to verify a Message matches a format.
- * Instances of this class should be idempotent and thread-safe.
+ * Instances of this class should be stateless and thread-safe.
  */
 public abstract class MessageVerifier
 {
