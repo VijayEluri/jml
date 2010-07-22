@@ -18,6 +18,5 @@ is an example of perfect candidate for an instance of the JML MessageLink class.
 * Test MessageTransformer to ensure all headers are copied as appropriate
 * Test all the different combinations supported by MessageLink
  - Test DMQ works as expected
- - Test inputVerifier
  - Test outputVerifier
  - Test transformer
