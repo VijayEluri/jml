@@ -193,7 +193,6 @@ public class MessageLinkTestCase
     final MessageLink link = new MessageLink();
     link.setInputQueue( TestHelper.QUEUE_1_NAME, null );
     link.setOutputQueue( TestHelper.QUEUE_2_NAME );
-    //link.setDmqName( TestHelper.DMQ_NAME );
     link.setInputVerifier( new TestMessageVerifier( 3 ) );
     link.setName( "TestLink" );
     link.start( createSession() );
@@ -204,6 +203,47 @@ public class MessageLinkTestCase
     link.stop();
   }
 
+    @Test
+  public void transferFromInputQueueToOutputQueueWithOutputVerifier()
+    throws Exception
+  {
+    final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
+    final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
+
+    final MessageLink link = new MessageLink();
+    link.setInputQueue( TestHelper.QUEUE_1_NAME, null );
+    link.setOutputQueue( TestHelper.QUEUE_2_NAME );
+    link.setDmqName( TestHelper.DMQ_NAME );
+    link.setOutputVerifier( new TestMessageVerifier( 3 ) );
+    link.setName( "TestLink" );
+    link.start( createSession() );
+
+    produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
+    collector.expectMessageCount( 4 );
+    dmqCollector.expectMessageCount( 1 );
+    link.stop();
+  }
+
+  @Test
+  public void transferFromInputQueueToOutputQueueWithOutputVerifierButNoDMQSet()
+    throws Exception
+  {
+    final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
+    final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
+
+    final MessageLink link = new MessageLink();
+    link.setInputQueue( TestHelper.QUEUE_1_NAME, null );
+    link.setOutputQueue( TestHelper.QUEUE_2_NAME );
+    link.setOutputVerifier( new TestMessageVerifier( 3 ) );
+    link.setName( "TestLink" );
+    link.start( createSession() );
+
+    produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
+    collector.expectMessageCount( 4 );
+    dmqCollector.expectMessageCount( 0 );
+    link.stop();
+  }
+  
   private static void publishMessage( final Session session,
                                       final Destination destination,
                                       final String messageContent,
