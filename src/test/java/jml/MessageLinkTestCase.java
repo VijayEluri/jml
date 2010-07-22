@@ -1,5 +1,7 @@
 package jml;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -7,12 +9,18 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Test;
 
 public class MessageLinkTestCase
   extends AbstractBrokerBasedTestCase
 {
-  static final String HEADER_KEY = "MyHeader";
+  @Before
+  public void turnOffLogging()
+  {
+    Logger.getLogger( MessageLink.class.getName() ).setLevel( Level.OFF );
+  }
 
   @Test
   public void transferFromInputQueueToOutputQueue()
@@ -38,7 +46,7 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputQueue( TestHelper.QUEUE_1_NAME, HEADER_KEY + " <= 2" );
+    link.setInputQueue( TestHelper.QUEUE_1_NAME, TestHelper.HEADER_KEY + " <= 2" );
     link.setOutputQueue( TestHelper.QUEUE_2_NAME );
     link.setName( "TestLink" );
     link.start( createSession() );
@@ -94,7 +102,7 @@ public class MessageLinkTestCase
     final MessageCollector inputCollector = collectResults( TestHelper.TOPIC_1_NAME, true );
 
     final MessageLink link = new MessageLink();
-    link.setInputTopic( TestHelper.TOPIC_1_NAME, null, HEADER_KEY + " <= 2" );
+    link.setInputTopic( TestHelper.TOPIC_1_NAME, null, TestHelper.HEADER_KEY + " <= 2" );
     link.setOutputQueue( TestHelper.QUEUE_2_NAME );
     link.setName( "TestLink" );
     link.start( createSession() );
@@ -139,15 +147,38 @@ public class MessageLinkTestCase
 
     // Should work fine as durable subscription exists
     createSession().unsubscribe( "MySubscriptionName" );
-
+    boolean fail;
     try
     {
       createSession().unsubscribe( "MySubscriptionName" );
+      fail = true;
     }
     catch( Exception e )
     {
-      //Should fail as the subscription has already been removed
+      fail = false;
     }
+    if( fail ) fail( "Expected an exception to be thrown when unsubscribing for a second time" );
+  }
+
+  @Test
+  public void transferFromInputQueueToOutputQueueWithInputVerifier()
+    throws Exception
+  {
+    final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
+    final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
+
+    final MessageLink link = new MessageLink();
+    link.setInputQueue( TestHelper.QUEUE_1_NAME, null );
+    link.setOutputQueue( TestHelper.QUEUE_2_NAME );
+    link.setDmqName( TestHelper.DMQ_NAME );
+    link.setInputVerifier( new TestMessageVerifier( 3 ) );
+    link.setName( "TestLink" );
+    link.start( createSession() );
+
+    produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
+    collector.expectMessageCount( 4 );
+    dmqCollector.expectMessageCount( 1 );
+    link.stop();
   }
 
   private static void publishMessage( final Session session,
@@ -158,7 +189,7 @@ public class MessageLinkTestCase
   {
     final MessageProducer producer = session.createProducer( destination );
     final Message message = session.createTextMessage( messageContent );
-    message.setObjectProperty( HEADER_KEY, headerValue );
+    message.setObjectProperty( TestHelper.HEADER_KEY, headerValue );
 
     // Disable generation of ids as we don't care about them
     // (Actually ignored by OMQ)

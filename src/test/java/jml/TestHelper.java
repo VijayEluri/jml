@@ -24,6 +24,7 @@ final class TestHelper
   static final String QUEUE_2_NAME = "QUEUE_2";
   private static BrokerService c_broker;
   private static int c_initDepth;
+  static final String HEADER_KEY = "MyHeader";
 
   static URL createURLForContent( final Class<?> type, final String content, final String suffix )
     throws IOException

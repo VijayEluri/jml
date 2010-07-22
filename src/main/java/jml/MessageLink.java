@@ -1,16 +1,26 @@
 package jml;
 
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Session;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
 
 public final class MessageLink
 {
+  private static final Logger LOG = Logger.getLogger( MessageLink.class.getName() );
+  
   private String m_name;
   private String m_sourceName;
   private String m_subscriptionName;
@@ -129,7 +139,7 @@ public final class MessageLink
     catch( final JMSException e )
     {
       m_isFrozen = false;
-      log( "Error starting MessageLink", e );
+      warning( "Error starting MessageLink", e );
       stop();
       throw e;
     }
@@ -144,7 +154,7 @@ public final class MessageLink
     }
     catch( final JMSException e )
     {
-      log( "Closing consumer", e );
+      warning( "Closing consumer", e );
     }
     m_inConsumer = null;
 
@@ -154,7 +164,7 @@ public final class MessageLink
     }
     catch( final JMSException e )
     {
-      log( "Closing producer", e );
+      warning( "Closing producer", e );
     }
     m_outProducer = null;
 
@@ -164,7 +174,7 @@ public final class MessageLink
     }
     catch( final JMSException e )
     {
-      log( "Closing producer for dmq", e );
+      warning( "Closing producer for dmq", e );
     }
     m_dmqProducer = null;
 
@@ -174,7 +184,7 @@ public final class MessageLink
     }
     catch( final JMSException e )
     {
-      log( "Closing session", e );
+      warning( "Closing session", e );
     }
     m_session = null;
 
@@ -212,15 +222,16 @@ public final class MessageLink
 
   private void handleFailure( final Message inMessage, final String reason, final Throwable t )
   {
-    log( reason, t );
+    info( reason, t );
     if( null == m_dmqProducer )
     {
       final String message = "Unable to handle message and no DMQ to send message to. Message: " + inMessage;
+      warning( message, null );
       throw new IllegalStateException( message );
     }
-    final Message message = inMessage;
     try
     {
+      final Message message = cloneMessageForDMQ( m_session, inMessage );
       message.setStringProperty( "JMLMessageLink", m_name );
       message.setStringProperty( "JMLFailureReason", reason );
       message.setStringProperty( "JMLInChannelName", m_sourceName );
@@ -231,6 +242,16 @@ public final class MessageLink
       }
       message.setStringProperty( "JMLOutChannelName", m_destinationName );
       message.setStringProperty( "JMLOutChannelType", m_isDestinationTopic ? "Topic" : "Queue" );
+
+      final String messageType;
+      if( inMessage instanceof TextMessage ) messageType = "TextMessage";
+      else if( inMessage instanceof MapMessage ) messageType = "MapMessage";
+      else if( inMessage instanceof BytesMessage ) messageType = "BytesMessage";
+      else if( inMessage instanceof ObjectMessage ) messageType = "ObjectMessage";
+      else if( inMessage instanceof StreamMessage ) messageType = "StreamMessage";
+      else messageType = "Unknown";
+      message.setStringProperty( "JMLOriginalMessageType", messageType );
+
       m_dmqProducer.send( message,
                           message.getJMSDeliveryMode(),
                           message.getJMSPriority(),
@@ -238,8 +259,10 @@ public final class MessageLink
     }
     catch( final Exception e )
     {
-      log( "Failed to send message to DMQ. Error: " + e, e );
-      throw new IllegalStateException( "Failed to send message to DMQ. Message: " + inMessage, t );
+      final String message =
+        "Failed to send message to DMQ.\nOriginal Error: " + t + "\ninMessage: " + inMessage;
+      warning( message, e );
+      throw new IllegalStateException( message, e );
     }
   }
 
@@ -277,28 +300,81 @@ public final class MessageLink
     }
   }
 
-  private Exception invalid( final String message )
+  private IllegalStateException invalid( final String message )
   {
+    warning( message, null );
     return new IllegalStateException( "MessageLink (" + m_name + ") invalid. Reason: " + message );
   }
 
-  private void log( final String message, final Throwable t )
+  private void info( final String message, final Throwable t )
   {
-    synchronized( System.out )
+    log( Level.INFO, message, t );
+  }
+
+  private void warning( final String message, final Throwable t )
+  {
+    log( Level.WARNING, message, t );
+  }
+
+  private void log( final Level level, final String message, final Throwable t )
+  {
+    if( LOG.isLoggable( level ) )
     {
-      System.out.println( "MessageLink (" + m_name + ") Error: " + message );
-      if( null != t ) t.printStackTrace( System.out );
+      LOG.log( level, "MessageLink (" + m_name + ") Problem: " + message, t );
     }
   }
 
   private void ensureEditable()
   {
-    if( m_isFrozen )
+    if( m_isFrozen ) throw invalid( "Attempting to edit active MessageLink" );
+  }
+
+  static Message cloneMessageForDMQ( final Session session, final Message from )
+      throws Exception
+  {
+    final Message to;
+    if( from instanceof TextMessage )
     {
-      final String message = "Attempting to edit active MessageLink";
-      log( message, null );
-      throw new IllegalStateException( "MessageLink (" + m_name + "). " + message );
+      to = session.createTextMessage( ( (TextMessage)from ).getText() );
     }
+    else if ( from instanceof MapMessage )
+    {
+      final MapMessage fromMessage = (MapMessage)from;
+      final Enumeration names = fromMessage.getMapNames();
+      final MapMessage toMessage = session.createMapMessage();
+      while( names.hasMoreElements() )
+      {
+        final String key = (String)names.nextElement();
+        toMessage.setObjectProperty( key, fromMessage.getObject( key ) );
+      }
+      to = toMessage;
+    }
+    else if ( from instanceof BytesMessage )
+    {
+      final BytesMessage fromMessage = (BytesMessage)from;
+      final BytesMessage toMessage = session.createBytesMessage();
+      final long length = fromMessage.getBodyLength();
+      for( int i = 0; i < length; i++ )
+      {
+        toMessage.writeByte( fromMessage.readByte() );
+      }
+      to = toMessage;
+    }
+    else if ( from instanceof ObjectMessage )
+    {
+      final ObjectMessage fromMessage = (ObjectMessage)from;
+      // Warning - this assumes that the object can be deserialized
+      // in the context of the link which may not be the case
+      to = session.createObjectMessage( fromMessage.getObject() );
+    }
+    else //assume
+    {
+      //Ignore body as unable to copy across StreamMessage or any custom message types
+      to = session.createTextMessage();
+    }
+
+    MessageUtil.copyMessageHeaders( from, to );
+    return to;
   }
 
   private class LinkMessageListener implements MessageListener
