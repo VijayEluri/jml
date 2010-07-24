@@ -17,63 +17,122 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+/**
+ * A base class that can be extended to receive messages from a specific source m_channel.
+ * The m_channel can either be a queue or a topic in which case the m_channel name is prefixed
+ * with "queue://" or "topic://" respectively. The messages delivered to the endpoint can be
+ * be filtered by specifying a selector. The subscription can also be made durable for topic
+ * channels by specifying the subscription name.
+ *
+ * <p>If an exception is raised during message processing then the endpoint will send a copy of
+ * the message to the dead message queue if the dead message queue has been specified. Otherwise
+ * the endpoint will rethrow the exception and rely on the message server to catch and log the
+ * problem.</p> 
+ */
 public abstract class AbstractMessageEndpoint
 {
-  ///Prefix for queue type channels
-  public static final String QUEUE_PREFIX = "queue://";
-  ///Prefix for topic type channels
-  public static final String TOPIC_PREFIX = "topic://";
-
+  /// Logger used to log in the endpoint and subclasses.
   protected static final Logger LOG = Logger.getLogger( AbstractMessageEndpoint.class.getName() );
 
   private String m_name;
-  private String m_sourceName;
   private String m_subscriptionName;
   private String m_selector;
-  private boolean m_isSourceTopic;
   private MessageVerifier m_inputVerifier;
-
   private String m_dmqName;
-
+  private ChannelSpec m_source;
   private boolean m_isFrozen;
 
   private Session m_session;
-  private MessageConsumer m_inConsumer;
+  private MessageConsumer m_sourceConsumer;
   private MessageProducer m_dmqProducer;
 
+  /** Specify the name of the endpoint. Used during debugging. */
   public final void setName( final String name )
   {
     ensureEditable();
     m_name = name;
   }
 
-  public final void setInputChannel( final String channelName, final String subscription, final String selector )
+  /** Return the name of the endpoint. */
+  public final String getName()
+  {
+    return m_name;
+  }
+
+  /**
+   * Specify the source channel.
+   *
+   * @param channelName the channel specification.
+   * @param subscription the subscription name if durable.
+   * @param selector the selector if any.
+   */
+  public final void setSourceChannel( final String channelName, final String subscription, final String selector )
   {
     if( null == channelName ) throw new NullPointerException( "channelName" );
-    if( null != subscription && !channelName.startsWith( TOPIC_PREFIX ) )
+    if( null != subscription && !channelName.startsWith( ChannelSpec.TOPIC_PREFIX ) )
     {
       throw new IllegalStateException( "Channels supplied with subscriptions must be topics" );
     }
     ensureEditable();
-    final ChannelSpec spec = parseChannelSpec( channelName );
-    m_sourceName = spec.channel;
-    m_isSourceTopic = spec.isTopic;
+    m_source = ChannelSpec.parseChannelSpec( channelName );
     m_subscriptionName = subscription;
     m_selector = selector;
   }
 
+  /** Return the specification for the source channel. */
+  public ChannelSpec getSource()
+  {
+    return m_source;
+  }
+
+  /** Return the durable subscription name, if any. */
+  public final String getSubscriptionName()
+  {
+    return m_subscriptionName;
+  }
+
+  /** Return the selector string if any. */
+  public String getSelector()
+  {
+    return m_selector;
+  }
+
+  /**
+   * Specify the name of the dead message queue. If an exception occurs during message processing
+   * the endpoint will attempt to route the message to this queue. Otherwise it will raise an
+   * exception from handler and let the MOM middle-ware handle the failure.
+   */
   public final void setDmqName( final String dmqName )
   {
     ensureEditable();
     m_dmqName = dmqName;
   }
 
+  /** Return the dead message queue name, if any. */
+  public final String getDmqName()
+  {
+    return m_dmqName;
+  }
+
+  /**
+   * Specify the input message verifier. The input message verifier is invoked prior
+   * to the handleMessage() method. If the message verifier raises an exception then
+   * the message will not be passed onto the handleMessage method.
+   */
   public final void setInputVerifier( final MessageVerifier inputVerifier )
   {
     ensureEditable();
     m_inputVerifier = inputVerifier;
   }
 
+  /**
+   * Invoked to activate the endpoint.
+   * This is the method that actually connects to the JMS server attempts to
+   * subscribe to the configured channels.
+   *
+   * @param session the JMS session that is exclusive to the endpoint.
+   * @throws Exception if there is a problem starting connection.
+   */
   public final void start( final Session session )
     throws Exception
   {
@@ -85,8 +144,7 @@ public abstract class AbstractMessageEndpoint
 
       m_session = session;
 
-      final Destination inChannel =
-        m_isSourceTopic ? m_session.createTopic( m_sourceName ) : m_session.createQueue( m_sourceName );
+      final Destination inChannel = m_source.create( session );
       final Destination dmq = ( null != m_dmqName ) ? m_session.createQueue( m_dmqName ) : null;
       m_dmqProducer = ( null != dmq ) ? m_session.createProducer( dmq ) : null;
 
@@ -94,40 +152,36 @@ public abstract class AbstractMessageEndpoint
 
       if( null != m_subscriptionName )
       {
-        m_inConsumer = m_session.createDurableSubscriber( (Topic)inChannel, m_subscriptionName, m_selector, true );
+        m_sourceConsumer = m_session.createDurableSubscriber( (Topic)inChannel, m_subscriptionName, m_selector, true );
       }
       else
       {
-        m_inConsumer = m_session.createConsumer( inChannel, m_selector );
+        m_sourceConsumer = m_session.createConsumer( inChannel, m_selector );
       }
-      m_inConsumer.setMessageListener( new LinkMessageListener() );
+      m_sourceConsumer.setMessageListener( new EndpointMessageListener() );
     }
     catch( final JMSException e )
     {
       m_isFrozen = false;
-      warning( "Error starting MessageLink", e );
+      warning( "Error starting endpoint", e );
       stop();
       throw e;
     }
   }
 
-  protected void preSubscribe( final Session session )
-    throws Exception
-  {
-  }
-
+  /** Stop the endpoint, close the session and any consumers and producers. */
   public final void stop()
     throws Exception
   {
     try
     {
-      if( null != m_inConsumer ) m_inConsumer.close();
+      if( null != m_sourceConsumer ) m_sourceConsumer.close();
     }
     catch( final JMSException e )
     {
       warning( "Closing consumer", e );
     }
-    m_inConsumer = null;
+    m_sourceConsumer = null;
 
     try
     {
@@ -154,8 +208,125 @@ public abstract class AbstractMessageEndpoint
     m_isFrozen = false;
   }
 
+  /**
+   * Template method invoked prior to the endpoint subscribing to the input m_channel.
+   *
+   * @param session the associated session.
+   * @throws Exception if there is a problem that will cause start to fail.
+   */
+  protected void preSubscribe( final Session session )
+    throws Exception
+  {
+  }
+
+  /**
+   * Template method invoked during stop just prior to session being closed.
+   */
   protected void preSessionClose()
   {
+  }
+
+  /**
+   * Template method invoked prior to sending message to the dead message queue.
+   */
+  protected void preSendMessageToDMQ( final Message message )
+    throws JMSException
+  {
+  }
+
+  /**
+   * Method to override to handle the message.
+   *
+   * @param session the associated JMS session.
+   * @param message the message to handle.
+   * @throws Exception if there is a problem handling the message.
+   */
+  protected abstract void handleMessage( final Session session, final Message message )
+    throws Exception;
+
+  /**
+   * Handle failure as described in the class documentation.
+   *
+   * @param inMessage the message that caused the problem.
+   * @param reason a textual description of the problem
+   * @param t the exception (if any) raised.
+   */
+  protected final void handleFailure( final Message inMessage, final String reason, final Throwable t )
+  {
+    info( reason, t );
+    if( null == m_dmqProducer )
+    {
+      final String message = "Unable to handle message and no DMQ to send message to. Message: " + inMessage;
+      warning( message, null );
+      throw new IllegalStateException( message );
+    }
+    try
+    {
+      final Message message = createMessageToSendToDMQ( inMessage, reason );
+      m_dmqProducer.send( message,
+                          message.getJMSDeliveryMode(),
+                          message.getJMSPriority(),
+                          message.getJMSExpiration() );
+    }
+    catch( final Exception e )
+    {
+      final String message =
+        "Failed to send message to DMQ.\nOriginal Error: " + t + "\ninMessage: " + inMessage;
+      warning( message, e );
+      throw new IllegalStateException( message, e );
+    }
+  }
+
+  /**
+   * Raise an exception unless endpoint is editable.
+   * Should be used in all mutators that modify configuration data. 
+   */
+  protected final void ensureEditable()
+  {
+    if( m_isFrozen ) throw invalid( "Attempting to edit active MessageLink" );
+  }
+
+  /**
+   * Raise an exception if the configuration data is not valid. This method is invoked
+   * prior to starting the end point. Overide and invoke super if more configuration data
+   * is added to class. 
+   */
+  protected void ensureValidConfig()
+    throws Exception
+  {
+    if( null == m_source ) throw invalid( "source not specified" );
+    else if( null != m_subscriptionName && !m_source.isTopic() )
+    {
+      throw invalid( "subscriptionName should only be specified for topics" );
+    }
+  }
+
+  /** Return an IllegalStateException for specified message. */
+  protected final IllegalStateException invalid( final String message )
+  {
+    warning( message, null );
+    return new IllegalStateException( "MessageLink (" + m_name + ") invalid. Reason: " + message );
+  }
+
+  /** Log an INFO level message. */
+  protected final void info( final String message, final Throwable t )
+  {
+    log( Level.INFO, message, t );
+  }
+
+  /** Log an WARNING level message. */
+  protected final void warning( final String message, final Throwable t )
+  {
+    log( Level.WARNING, message, t );
+  }
+
+  /** Log a message at specified log level. */
+  protected final void log( final Level level, final String message, final Throwable t )
+  {
+    if( LOG.isLoggable( level ) )
+    {
+      LOG.log( level, "MessageLink (" + m_name + ") Problem: " + message, t );
+    }
   }
 
   private void doMessage( final Message message )
@@ -184,43 +355,13 @@ public abstract class AbstractMessageEndpoint
     }
   }
 
-  protected abstract void handleMessage( final Session session, final Message message )
-    throws Exception;
-
-  protected final void handleFailure( final Message inMessage, final String reason, final Throwable t )
-  {
-    info( reason, t );
-    if( null == m_dmqProducer )
-    {
-      final String message = "Unable to handle message and no DMQ to send message to. Message: " + inMessage;
-      warning( message, null );
-      throw new IllegalStateException( message );
-    }
-    try
-    {
-      final Message message = createMessageToSendToDMQ( inMessage, reason );
-      m_dmqProducer.send( message,
-                          message.getJMSDeliveryMode(),
-                          message.getJMSPriority(),
-                          message.getJMSExpiration() );
-    }
-    catch( final Exception e )
-    {
-      final String message =
-        "Failed to send message to DMQ.\nOriginal Error: " + t + "\ninMessage: " + inMessage;
-      warning( message, e );
-      throw new IllegalStateException( message, e );
-    }
-  }
-
   private Message createMessageToSendToDMQ( final Message inMessage, final String reason )
     throws Exception
   {
     final Message message = cloneMessageForDMQ( m_session, inMessage );
     message.setStringProperty( "JMLMessageLink", m_name );
     message.setStringProperty( "JMLFailureReason", reason );
-    message.setStringProperty( "JMLInChannelName", m_sourceName );
-    message.setStringProperty( "JMLInChannelType", m_isSourceTopic ? "Topic" : "Queue" );
+    message.setStringProperty( "JMLSourceChannel", m_source.toSpec() );
     if( null != m_subscriptionName )
     {
       message.setStringProperty( "JMLInSubscriptionName", m_subscriptionName );
@@ -237,50 +378,6 @@ public abstract class AbstractMessageEndpoint
 
     preSendMessageToDMQ( message );
     return message;
-  }
-
-  protected void preSendMessageToDMQ( final Message message )
-    throws JMSException
-  {
-  }
-
-  protected void ensureValidConfig()
-    throws Exception
-  {
-    if( null == m_sourceName ) throw invalid( "sourceName not specified" );
-    else if( null != m_subscriptionName && !m_isSourceTopic )
-    {
-      throw invalid( "subscriptionName should only be specified for topics" );
-    }
-  }
-
-  protected final IllegalStateException invalid( final String message )
-  {
-    warning( message, null );
-    return new IllegalStateException( "MessageLink (" + m_name + ") invalid. Reason: " + message );
-  }
-
-  protected final void info( final String message, final Throwable t )
-  {
-    log( Level.INFO, message, t );
-  }
-
-  protected final void warning( final String message, final Throwable t )
-  {
-    log( Level.WARNING, message, t );
-  }
-
-  protected final void log( final Level level, final String message, final Throwable t )
-  {
-    if( LOG.isLoggable( level ) )
-    {
-      LOG.log( level, "MessageLink (" + m_name + ") Problem: " + message, t );
-    }
-  }
-
-  protected final void ensureEditable()
-  {
-    if( m_isFrozen ) throw invalid( "Attempting to edit active MessageLink" );
   }
 
   private static Message cloneMessageForDMQ( final Session session, final Message from )
@@ -324,48 +421,14 @@ public abstract class AbstractMessageEndpoint
     else //assume
     {
       //Ignore body as unable to copy across StreamMessage or any custom message types
-      to = session.createTextMessage();
+      to = session.createMessage();
     }
 
     MessageUtil.copyMessageHeaders( from, to );
     return to;
   }
 
-  protected final ChannelSpec parseChannelSpec( final String channelName )
-  {
-    if( null == channelName ) throw new NullPointerException( "channelName" );
-    final String channel;
-    final boolean isTopic;
-    if( channelName.startsWith( QUEUE_PREFIX ) )
-    {
-      channel = channelName.substring( QUEUE_PREFIX.length() );
-      isTopic = false;
-    }
-    else if( channelName.startsWith( TOPIC_PREFIX ) )
-    {
-      channel = channelName.substring( TOPIC_PREFIX.length() );
-      isTopic = true;
-    }
-    else
-    {
-      throw new IllegalStateException( "Invalid channel specification " + channelName );
-    }
-    return new ChannelSpec( channel, isTopic );
-  }
-
-  protected class ChannelSpec
-  {
-    protected final String channel;
-    protected final boolean isTopic;
-
-    ChannelSpec( final String channel, final boolean topic )
-    {
-      this.channel = channel;
-      isTopic = topic;
-    }
-  }
-
-  private class LinkMessageListener implements MessageListener
+  private class EndpointMessageListener implements MessageListener
   {
     public void onMessage( final Message message )
     {

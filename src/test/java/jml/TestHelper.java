@@ -22,10 +22,10 @@ final class TestHelper
   static final String TOPIC_2_NAME = "TOPIC_2";
   static final String QUEUE_1_NAME = "QUEUE_1";
   static final String QUEUE_2_NAME = "QUEUE_2";
-  static final String TOPIC_1_SPEC = MessageLink.TOPIC_PREFIX + TOPIC_1_NAME;
-  static final String TOPIC_2_SPEC = MessageLink.TOPIC_PREFIX + TOPIC_2_NAME;
-  static final String QUEUE_1_SPEC = MessageLink.QUEUE_PREFIX + QUEUE_1_NAME;
-  static final String QUEUE_2_SPEC = MessageLink.QUEUE_PREFIX + QUEUE_2_NAME;
+  static final String TOPIC_1_SPEC = ChannelSpec.TOPIC_PREFIX + TOPIC_1_NAME;
+  static final String TOPIC_2_SPEC = ChannelSpec.TOPIC_PREFIX + TOPIC_2_NAME;
+  static final String QUEUE_1_SPEC = ChannelSpec.QUEUE_PREFIX + QUEUE_1_NAME;
+  static final String QUEUE_2_SPEC = ChannelSpec.QUEUE_PREFIX + QUEUE_2_NAME;
   private static BrokerService c_broker;
   private static int c_initDepth;
   static final String HEADER_KEY = "MyHeader";

@@ -1,34 +1,41 @@
 package jml;
 
 import java.util.logging.Level;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+/**
+ * The message endpoint that routes a message from a source channel to a destination channel.
+ * The message may pass through input message verifier, transformer and output message verifier
+ * before being sent to the destination channel.
+ */
 public final class MessageLink
   extends AbstractMessageEndpoint
 {
-  private String m_destinationName;
-  private boolean m_isDestinationTopic;
+  private ChannelSpec m_destination;
   private MessageVerifier m_outputVerifier;
   private MessageTransformer m_transformer;
-  private MessageProducer m_outProducer;
+  private MessageProducer m_destinationProducer;
 
-  public void setOutputChannel( final String channelName )
+  /** Specify the destination channel. */
+  public void setDestinationChannel( final String channelSpec )
   {
-    final ChannelSpec spec = parseChannelSpec( channelName );
-    m_destinationName = spec.channel;
-    m_isDestinationTopic = spec.isTopic;
+    m_destination = ChannelSpec.parseChannelSpec( channelSpec );
   }
 
+  /** Specify verifier that is invoked prior to sending message to the destination channel. */
   public void setOutputVerifier( final MessageVerifier outputVerifier )
   {
     ensureEditable();
     m_outputVerifier = outputVerifier;
   }
 
+  /**
+   * Specify the transformer. The transformer is invoked prior to sending
+   * message to destination and before output verifier.
+   */
   public void setTransformer( final MessageTransformer transformer )
   {
     ensureEditable();
@@ -38,9 +45,7 @@ public final class MessageLink
   @Override
   protected void preSubscribe( final Session session ) throws Exception
   {
-    final Destination outChannel =
-      m_isDestinationTopic ? session.createTopic( m_destinationName ) : session.createQueue( m_destinationName );
-    m_outProducer = session.createProducer( outChannel );
+    m_destinationProducer = session.createProducer( m_destination.create( session ) );
   }
 
   @Override
@@ -48,13 +53,13 @@ public final class MessageLink
   {
     try
     {
-      if( null != m_outProducer ) m_outProducer.close();
+      if( null != m_destinationProducer ) m_destinationProducer.close();
     }
     catch( final JMSException e )
     {
-      warning( "Closing producer", e );
+      warning( "Closing destination producer", e );
     }
-    m_outProducer = null;
+    m_destinationProducer = null;
   }
 
   @Override
@@ -84,8 +89,7 @@ public final class MessageLink
   @Override
   protected void preSendMessageToDMQ( final Message message ) throws JMSException
   {
-    message.setStringProperty( "JMLOutChannelName", m_destinationName );
-    message.setStringProperty( "JMLOutChannelType", m_isDestinationTopic ? "Topic" : "Queue" );
+    message.setStringProperty( "JMLDestinationChannel", m_destination.toSpec() );
   }
 
   private void send( final Message inMessage, final Message outMessage )
@@ -100,10 +104,10 @@ public final class MessageLink
     }
     try
     {
-      m_outProducer.send( outMessage,
-                          outMessage.getJMSDeliveryMode(),
-                          outMessage.getJMSPriority(),
-                          outMessage.getJMSExpiration() );
+      m_destinationProducer.send( outMessage,
+                                  outMessage.getJMSDeliveryMode(),
+                                  outMessage.getJMSPriority(),
+                                  outMessage.getJMSExpiration() );
     }
     catch( final Exception e )
     {
@@ -115,6 +119,6 @@ public final class MessageLink
     throws Exception
   {
     super.ensureValidConfig();
-    if( null == m_destinationName ) throw invalid( "sourceName not specified" );
+    if( null == m_destination ) throw invalid( "destination channel not specified" );
   }
 }

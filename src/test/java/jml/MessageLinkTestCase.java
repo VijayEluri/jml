@@ -31,14 +31,20 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
     produceMessages( TestHelper.QUEUE_1_NAME, false, 5 );
     collector.expectMessageCount( 5 );
     link.stop();
+
+    assertEquals( "getName()", "TestLink", link.getName() );
+    assertEquals( "getDmqName()", null, link.getDmqName() );
+    assertEquals( "getSelector()", null, link.getSelector() );
+    assertEquals( "getSubscriptionName()", null, link.getSubscriptionName() );
+    assertEquals( "getSource().toSpec()", TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
   }
 
   @Test
@@ -48,8 +54,8 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, TestHelper.HEADER_KEY + " <= 2" );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, TestHelper.HEADER_KEY + " <= 2" );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -60,6 +66,8 @@ public class MessageLinkTestCase
     collectResults( TestHelper.QUEUE_1_NAME, false ).expectMessageCount( 2 );
 
     link.stop();
+
+    assertEquals( "getSelector()", TestHelper.HEADER_KEY + " <= 2", link.getSelector() );
   }
 
   @Test
@@ -69,8 +77,8 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.TOPIC_2_NAME, true );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.TOPIC_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.TOPIC_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -86,8 +94,8 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.TOPIC_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.TOPIC_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -104,8 +112,8 @@ public class MessageLinkTestCase
     final MessageCollector inputCollector = collectResults( TestHelper.TOPIC_1_NAME, true );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.TOPIC_1_SPEC, null, TestHelper.HEADER_KEY + " <= 2" );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.TOPIC_1_SPEC, null, TestHelper.HEADER_KEY + " <= 2" );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -125,8 +133,8 @@ public class MessageLinkTestCase
     final MessageCollector collector = collectResults( TestHelper.TOPIC_2_NAME, true );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.TOPIC_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.TOPIC_2_SPEC );
+    link.setSourceChannel( TestHelper.TOPIC_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.TOPIC_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -140,8 +148,8 @@ public class MessageLinkTestCase
     throws Exception
   {
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.TOPIC_1_SPEC, "MySubscriptionName", null );
-    link.setOutputChannel( TestHelper.TOPIC_2_SPEC );
+    link.setSourceChannel( TestHelper.TOPIC_1_SPEC, "MySubscriptionName", null );
+    link.setDestinationChannel( TestHelper.TOPIC_2_SPEC );
     link.setName( "TestLink" );
 
     link.start( createSession() );
@@ -160,6 +168,8 @@ public class MessageLinkTestCase
       fail = false;
     }
     if( fail ) fail( "Expected an exception to be thrown when unsubscribing for a second time" );
+
+    assertEquals( "getSubscriptionName()", "MySubscriptionName", link.getSubscriptionName() );
   }
 
   @Test
@@ -170,8 +180,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setDmqName( TestHelper.DMQ_NAME );
     link.setInputVerifier( new TestMessageVerifier( 3 ) );
     link.setName( "TestLink" );
@@ -183,13 +193,17 @@ public class MessageLinkTestCase
 
     assertMessageProperty( message, "JMLMessageLink", "TestLink" );
     assertMessagePropertyNotNull( message, "JMLFailureReason" );
-    assertMessageProperty( message, "JMLInChannelName", TestHelper.QUEUE_1_NAME );
-    assertMessageProperty( message, "JMLInChannelType", "Queue" );
+    assertMessageProperty( message, "JMLSourceChannel", TestHelper.QUEUE_1_SPEC );
     assertMessagePropertyNull( message, "JMLInSubscriptionName" );
-    assertMessageProperty( message, "JMLOutChannelName", TestHelper.QUEUE_2_NAME );
-    assertMessageProperty( message, "JMLOutChannelType", "Queue" );
+    assertMessageProperty( message, "JMLDestinationChannel", TestHelper.QUEUE_2_SPEC );
     assertMessageProperty( message, "JMLOriginalMessageType", "TextMessage" );
     link.stop();
+
+    assertEquals( "getName()", "TestLink", link.getName() );
+    assertEquals( "getDmqName()", TestHelper.DMQ_NAME, link.getDmqName() );
+    assertEquals( "getSelector()", null, link.getSelector() );
+    assertEquals( "getSubscriptionName()", null, link.getSubscriptionName() );
+    assertEquals( "getSource().toSpec()", TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
   }
 
   @Test
@@ -200,8 +214,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setInputVerifier( new TestMessageVerifier( 3 ) );
     link.setName( "TestLink" );
     link.start( createSession() );
@@ -218,8 +232,8 @@ public class MessageLinkTestCase
   {
     final MessageCollector collector = collectResults( TestHelper.QUEUE_2_NAME, false );
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     final TestMessageVerifier inputVerifier = new TestMessageVerifier( 3 );
     link.setInputVerifier( inputVerifier );
     final TestMessageTransformer transformer = new TestMessageTransformer( false );
@@ -247,8 +261,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setDmqName( TestHelper.DMQ_NAME );
     link.setOutputVerifier( new TestMessageVerifier( 3 ) );
     link.setName( "TestLink" );
@@ -260,11 +274,9 @@ public class MessageLinkTestCase
 
     assertMessageProperty( message, "JMLMessageLink", "TestLink" );
     assertMessagePropertyNotNull( message, "JMLFailureReason" );
-    assertMessageProperty( message, "JMLInChannelName", TestHelper.QUEUE_1_NAME );
-    assertMessageProperty( message, "JMLInChannelType", "Queue" );
+    assertMessageProperty( message, "JMLSourceChannel", TestHelper.QUEUE_1_SPEC );
     assertMessagePropertyNull( message, "JMLInSubscriptionName" );
-    assertMessageProperty( message, "JMLOutChannelName", TestHelper.QUEUE_2_NAME );
-    assertMessageProperty( message, "JMLOutChannelType", "Queue" );
+    assertMessageProperty( message, "JMLDestinationChannel", TestHelper.QUEUE_2_SPEC );
     assertMessageProperty( message, "JMLOriginalMessageType", "TextMessage" );
     link.stop();
   }
@@ -277,8 +289,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setOutputVerifier( new TestMessageVerifier( 3 ) );
     link.setName( "TestLink" );
     link.start( createSession() );
@@ -297,8 +309,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setDmqName( TestHelper.DMQ_NAME );
     final TestMessageTransformer transformer = new TestMessageTransformer( false );
     link.setTransformer( transformer );
@@ -320,8 +332,8 @@ public class MessageLinkTestCase
     final MessageCollector dmqCollector = collectResults( TestHelper.DMQ_NAME, false );
 
     final MessageLink link = new MessageLink();
-    link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
+    link.setSourceChannel( TestHelper.QUEUE_1_SPEC, null, null );
+    link.setDestinationChannel( TestHelper.QUEUE_2_SPEC );
     link.setDmqName( TestHelper.DMQ_NAME );
     final TestMessageTransformer transformer = new TestMessageTransformer( true );
     link.setTransformer( transformer );
