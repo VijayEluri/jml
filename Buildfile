@@ -13,7 +13,7 @@ AMQ = ['org.apache.activemq:activemq-core:jar:5.3.2', 'commons-logging:commons-l
 
 desc 'JML is a library that routes JMS messages between destinations, validating and transforming content whilst routing the messages'
 define 'jml' do
-  project.version = '0.0.1'
+  project.version = '0.0.2'
   project.group = 'realityforge'
   compile.options.source = '1.6'
   compile.options.target = '1.6'
