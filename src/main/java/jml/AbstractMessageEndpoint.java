@@ -111,7 +111,7 @@ public abstract class AbstractMessageEndpoint
     }
   }
 
-  protected void preSubscribe(final Session session)
+  protected void preSubscribe( final Session session )
     throws Exception
   {
   }

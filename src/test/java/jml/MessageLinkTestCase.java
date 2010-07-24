@@ -32,7 +32,7 @@ public class MessageLinkTestCase
 
     final MessageLink link = new MessageLink();
     link.setInputChannel( TestHelper.QUEUE_1_SPEC, null, null );
-    link.setOutputChannel( TestHelper.QUEUE_2_SPEC);
+    link.setOutputChannel( TestHelper.QUEUE_2_SPEC );
     link.setName( "TestLink" );
     link.start( createSession() );
 
@@ -232,8 +232,9 @@ public class MessageLinkTestCase
     produceMessages( TestHelper.QUEUE_1_NAME, false, 1 );
     collector.expectMessageCount( 1 );
 
-    assertTrue("inputVerifier < transformer", inputVerifier.getLastMessageTime() < transformer.getLastMessageTime() );
-    assertTrue("transformer < outputVerifier", transformer.getLastMessageTime() < outputVerifier.getLastMessageTime() );
+    assertTrue( "inputVerifier < transformer", inputVerifier.getLastMessageTime() < transformer.getLastMessageTime() );
+    assertTrue( "transformer < outputVerifier",
+                transformer.getLastMessageTime() < outputVerifier.getLastMessageTime() );
 
     link.stop();
   }
@@ -311,7 +312,7 @@ public class MessageLinkTestCase
     link.stop();
   }
 
-    @Test
+  @Test
   public void transferFromInputQueueToOutputQueueWithTransformThaResultsInError()
     throws Exception
   {
@@ -333,7 +334,6 @@ public class MessageLinkTestCase
     assertTrue( "Transformer been invoked", transformer.getLastMessageTime() != 0 );
     link.stop();
   }
-
 
   private static void publishMessage( final Session session,
                                       final Destination destination,

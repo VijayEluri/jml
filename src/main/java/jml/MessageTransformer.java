@@ -58,6 +58,7 @@ public abstract class MessageTransformer
   {
     return MessageUtil.castToType( message, type );
   }
+
   /**
    * Create a transformer that expects an XML formatted TextMessage and attempts to
    * apply an XSLT transform. Uses the underlying javax.xml.transform API. 
