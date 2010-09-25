@@ -16,3 +16,5 @@ repositories:
    - https://repository.apache.org/content/repositories/releases
    - http://www.ibiblio.org/maven2
    - http://www.aQute.biz/repo
+  release_to:
+    url: sftp://www.stocksoftware.com.au/www/stocksoftware/web/repositories/releases
