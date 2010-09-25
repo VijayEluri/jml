@@ -18,3 +18,4 @@ repositories:
    - http://www.aQute.biz/repo
   release_to:
     url: sftp://www.stocksoftware.com.au/www/stocksoftware/web/repositories/releases
+    permissions: 0664
