@@ -3,7 +3,7 @@ require 'buildr_iidea'
 
 desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
-  project.version = '0.9'
+  project.version = '0.9.1-SNAPSHOT'
   project.group = 'org.realityforge.jml'
 
   compile.options.source = '1.6'
