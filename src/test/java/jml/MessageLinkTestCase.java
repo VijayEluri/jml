@@ -1,5 +1,8 @@
 package jml;
 
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
@@ -9,14 +12,11 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 
 public class MessageLinkTestCase
   extends AbstractBrokerBasedTestCase
 {
-  @Before
+  @BeforeTest
   public void turnOffLogging()
   {
     MessageLink.LOG.setLevel( Level.OFF );
@@ -40,11 +40,11 @@ public class MessageLinkTestCase
     collector.expectMessageCount( 5 );
     link.stop();
 
-    assertEquals( "getName()", "TestLink", link.getName() );
-    assertEquals( "getDmqName()", null, link.getDmqName() );
-    assertEquals( "getSelector()", null, link.getSelector() );
-    assertEquals( "getSubscriptionName()", null, link.getSubscriptionName() );
-    assertEquals( "getSource().toSpec()", TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
+    assertEquals( "TestLink", link.getName() );
+    assertEquals( null, link.getDmqName() );
+    assertEquals( null, link.getSelector() );
+    assertEquals( null, link.getSubscriptionName() );
+    assertEquals( TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
   }
 
   @Test
@@ -67,7 +67,7 @@ public class MessageLinkTestCase
 
     link.stop();
 
-    assertEquals( "getSelector()", TestHelper.HEADER_KEY + " <= 2", link.getSelector() );
+    assertEquals( TestHelper.HEADER_KEY + " <= 2", link.getSelector() );
   }
 
   @Test
@@ -169,7 +169,7 @@ public class MessageLinkTestCase
     }
     if( fail ) fail( "Expected an exception to be thrown when unsubscribing for a second time" );
 
-    assertEquals( "getSubscriptionName()", "MySubscriptionName", link.getSubscriptionName() );
+    assertEquals( "MySubscriptionName", link.getSubscriptionName() );
   }
 
   @Test
@@ -199,11 +199,11 @@ public class MessageLinkTestCase
     assertMessageProperty( message, "JMLOriginalMessageType", "TextMessage" );
     link.stop();
 
-    assertEquals( "getName()", "TestLink", link.getName() );
-    assertEquals( "getDmqName()", TestHelper.DMQ_NAME, link.getDmqName() );
-    assertEquals( "getSelector()", null, link.getSelector() );
-    assertEquals( "getSubscriptionName()", null, link.getSubscriptionName() );
-    assertEquals( "getSource().toSpec()", TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
+    assertEquals( "TestLink", link.getName() );
+    assertEquals( TestHelper.DMQ_NAME, link.getDmqName() );
+    assertEquals( null, link.getSelector() );
+    assertEquals( null, link.getSubscriptionName() );
+    assertEquals( TestHelper.QUEUE_1_SPEC, link.getSource().toSpec() );
   }
 
   @Test
@@ -246,9 +246,8 @@ public class MessageLinkTestCase
     produceMessages( TestHelper.QUEUE_1_NAME, false, 1 );
     collector.expectMessageCount( 1 );
 
-    assertTrue( "inputVerifier < transformer", inputVerifier.getLastMessageTime() < transformer.getLastMessageTime() );
-    assertTrue( "transformer < outputVerifier",
-                transformer.getLastMessageTime() < outputVerifier.getLastMessageTime() );
+    assertTrue( inputVerifier.getLastMessageTime() < transformer.getLastMessageTime(), "inputVerifier < transformer" );
+    assertTrue( transformer.getLastMessageTime() < outputVerifier.getLastMessageTime(), "transformer < outputVerifier" );
 
     link.stop();
   }
@@ -320,7 +319,7 @@ public class MessageLinkTestCase
     produceMessages( TestHelper.QUEUE_1_NAME, false, 1 );
     collector.expectMessageCount( 1 );
     dmqCollector.expectMessageCount( 0 );
-    assertTrue( "Transformer been invoked", transformer.getLastMessageTime() != 0 );
+    assertTrue( transformer.getLastMessageTime() != 0, "Transformer been invoked" );
     link.stop();
   }
 
@@ -343,7 +342,7 @@ public class MessageLinkTestCase
     produceMessages( TestHelper.QUEUE_1_NAME, false, 1 );
     collector.expectMessageCount( 0 );
     dmqCollector.expectMessageCount( 1 );
-    assertTrue( "Transformer been invoked", transformer.getLastMessageTime() != 0 );
+    assertTrue( transformer.getLastMessageTime() != 0, "Transformer been invoked" );
     link.stop();
   }
 
@@ -399,18 +398,18 @@ public class MessageLinkTestCase
   private void assertMessageProperty( final Message message, final String key, final Object value )
     throws JMSException
   {
-    assertEquals( "Header: " + key, value, message.getObjectProperty( key ) );
+    assertEquals( value, message.getObjectProperty( key ), "Header: " + key );
   }
 
   private void assertMessagePropertyNotNull( final Message message, final String key )
     throws JMSException
   {
-    assertNotNull( "Header: " + key, message.getObjectProperty( key ) );
+    assertNotNull( message.getObjectProperty( key ), "Header: " + key );
   }
 
   private void assertMessagePropertyNull( final Message message, final String key )
     throws JMSException
   {
-    assertNull( "Header: " + key, message.getObjectProperty( key ) );
+    assertNull( message.getObjectProperty( key ), "Header: " + key );
   }
 }

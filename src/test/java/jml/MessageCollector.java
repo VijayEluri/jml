@@ -1,12 +1,13 @@
 package jml;
 
+import org.testng.Assert;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import static org.junit.Assert.*;
 
 final class MessageCollector
   implements MessageListener
@@ -45,7 +46,7 @@ final class MessageCollector
     }
     if( DEBUG ) System.out.println( "expectMessageCount => results.size = " + results.size() );
 
-    assertEquals( "Expected message count", expectedMessageCount, results.size() );
+    Assert.assertEquals( expectedMessageCount, results.size(), "Expected message count" );
     return results;
   }
 }

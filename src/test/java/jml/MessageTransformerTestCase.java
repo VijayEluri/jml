@@ -1,11 +1,11 @@
 package jml;
 
+import static org.testng.Assert.*;
+import org.testng.annotations.Test;
 import java.net.URL;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import static org.junit.Assert.*;
-import org.junit.Test;
 
 public class MessageTransformerTestCase
   extends AbstractBrokerBasedTestCase
@@ -35,8 +35,6 @@ public class MessageTransformerTestCase
       e.printStackTrace();
       fail( "Expected to be able to verify message but got " + e );
     }
-    assertEquals( "result.getText()",
-                  "<ace>X</ace>",
-                  ( (TextMessage)result ).getText() );
+    assertEquals( "<ace>X</ace>", ((TextMessage) result ).getText() );
   }
 }

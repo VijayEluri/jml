@@ -1,33 +1,30 @@
 package jml;
 
-import java.util.LinkedList;
+import org.testng.annotations.*;
 import javax.jms.Connection;
 import javax.jms.Session;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import java.util.LinkedList;
 
 public class AbstractBrokerBasedTestCase
 {
   private Connection m_connection;
   private final LinkedList<Session> m_sessions = new LinkedList<Session>();
 
-  @BeforeClass
-  public static void startupBroker()
+  @BeforeSuite
+  public void startupBroker()
     throws Exception
   {
     TestHelper.startupBroker();
   }
 
-  @AfterClass
-  public static void shutdownBroker()
+  @AfterSuite
+  public void shutdownBroker()
     throws Exception
   {
     TestHelper.shutdownBroker();
   }
 
-  @Before
+  @BeforeMethod
   public void initConnection()
     throws Exception
   {
@@ -35,7 +32,7 @@ public class AbstractBrokerBasedTestCase
     m_connection.start();
   }
 
-  @After
+  @AfterMethod
   public void shutdownConnection()
     throws Exception
   {

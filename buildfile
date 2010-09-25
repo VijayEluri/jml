@@ -5,13 +5,15 @@ desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
   project.version = '0.9'
   project.group = 'org.realityforge.jml'
+
   compile.options.source = '1.6'
   compile.options.target = '1.6'
   compile.options.lint = 'all'
-
   compile.with :jms
+
   test.with :activemq_core, :commons_logging, :j2ee_management
-  test.include 'jml.LinkSuite'
+  test.using :testng
+  
   package(:bundle).tap do |bnd|
     bnd['Export-Package'] = "jml.*;version=#{version}"
     bnd['Import-Package'] = "javax.xml.*;resolution:=optional,*"

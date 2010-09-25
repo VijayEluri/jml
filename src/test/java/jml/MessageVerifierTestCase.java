@@ -1,12 +1,12 @@
 package jml;
 
+import static org.testng.Assert.*;
+import org.testng.annotations.Test;
 import java.net.URL;
 import java.util.regex.Pattern;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.xml.XMLConstants;
-import static org.junit.Assert.*;
-import org.junit.Test;
 
 public class MessageVerifierTestCase
   extends AbstractBrokerBasedTestCase
@@ -37,8 +37,7 @@ public class MessageVerifierTestCase
     catch( final Exception e )
     {
       fail = false;
-      assertEquals( "e.getMessage()",
-                    "Message with ID = " + mapMessage.getJMSMessageID() +
+      assertEquals( "Message with ID = " + mapMessage.getJMSMessageID() +
                     " is not of the expected type javax.jms.TextMessage. Actual Message Type: " +
                     mapMessage.getClass().getName(),
                     e.getMessage() );
@@ -53,8 +52,7 @@ public class MessageVerifierTestCase
     catch( final Exception e )
     {
       fail = false;
-      assertEquals( "e.getMessage()",
-                    "Message with ID = " + message.getJMSMessageID() + " failed to match pattern \"Not.*Message\".",
+      assertEquals( "Message with ID = " + message.getJMSMessageID() + " failed to match pattern \"Not.*Message\".",
                     e.getMessage() );
     }
     if( fail ) fail( "Expected to not be able to verify message with bad pattern" );
@@ -106,8 +104,7 @@ public class MessageVerifierTestCase
     catch( final Exception e )
     {
       fail = false;
-      assertEquals( "e.getMessage()",
-                    "Message with ID = " + mapMessage.getJMSMessageID() +
+      assertEquals( "Message with ID = " + mapMessage.getJMSMessageID() +
                     " is not of the expected type javax.jms.TextMessage. Actual Message Type: " +
                     mapMessage.getClass().getName(),
                     e.getMessage() );
@@ -123,8 +120,7 @@ public class MessageVerifierTestCase
     catch( final Exception e )
     {
       fail = false;
-      assertEquals( "e.getMessage()",
-                    "Message with ID = " + message.getJMSMessageID() +
+      assertEquals( "Message with ID = " + message.getJMSMessageID() +
                     " failed to match XSD loaded from " + url + ".",
                     e.getMessage() );
     }
@@ -139,8 +135,7 @@ public class MessageVerifierTestCase
     catch( final Exception e )
     {
       fail = false;
-      assertEquals( "e.getMessage()",
-                    "Message with ID = " + message.getJMSMessageID() +
+      assertEquals( "Message with ID = " + message.getJMSMessageID() +
                     " failed to match Schema loaded from " + url + ".",
                     e.getMessage() );
     }
