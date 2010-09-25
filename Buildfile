@@ -16,5 +16,4 @@ define 'jml' do
     bnd['Export-Package'] = "jml.*;version=#{version}"
   end
   package(:sources)
-  package(:javadoc)
 end
