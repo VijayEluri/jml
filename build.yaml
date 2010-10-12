@@ -1,7 +1,7 @@
 gems:
   #- ci_reporter
-  - buildr-bnd = 0.0.5
-  - buildr-iidea = 0.0.9
+  - buildr-bnd = 0.0.7
+  - buildr-iidea = 0.0.10
 
 artifacts:
   jms: org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar:1.1.1
