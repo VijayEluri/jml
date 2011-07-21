@@ -1,5 +1,4 @@
-require 'buildr_bnd'
-require 'buildr_iidea'
+require 'buildr/bnd'
 
 desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
