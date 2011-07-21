@@ -1,4 +1,5 @@
 require 'buildr/bnd'
+require 'buildr/cobertura'
 
 desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
