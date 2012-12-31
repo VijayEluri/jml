@@ -1,6 +1,8 @@
 JML
 ===
 
+[![Build Status](https://secure.travis-ci.org/realityforge/jml.png?branch=master)](http://travis-ci.org/realityforge/jml)
+
 JML grew out of the need to rapidly set up processors that consumed messages from one
 channel and produced messages on another channel. Typically the processor may apply some
 form of transformation or validation on the message as it is transmitted to the destination.
