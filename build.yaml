@@ -7,5 +7,5 @@ artifacts:
 repositories:
   remote:
    - https://repository.apache.org/content/repositories/releases
-   - http://www.ibiblio.org/maven2
+   - http://repo1.maven.org/maven2
    - http://www.aQute.biz/repo
