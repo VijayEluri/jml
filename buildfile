@@ -15,7 +15,7 @@ define 'jml' do
   test.using :testng
   
   package(:bundle).tap do |bnd|
-    bnd['Export-Package'] = "jml.*;version=#{version}"
+    bnd['Export-Package'] = "org.realityforge.jml.*;version=#{version}"
     bnd['Import-Package'] = "javax.xml.*;resolution:=optional,*"
     bnd['Bundle-License'] = "http://www.apache.org/licenses/LICENSE-2.0.txt"
     bnd['Bundle-Vendor'] = "RealityForge.org"
