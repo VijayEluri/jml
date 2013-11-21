@@ -1,8 +1,7 @@
-package org.realityforge.jml.jml;
+package org.realityforge.jml;
 
 import javax.jms.Message;
 import javax.jms.Session;
-import org.realityforge.jml.MessageTransformer;
 
 class TestMessageTransformer
   extends MessageTransformer

@@ -1,4 +1,4 @@
-package org.realityforge.jml.jml;
+package org.realityforge.jml;
 
 import java.util.LinkedList;
 import javax.jms.Connection;

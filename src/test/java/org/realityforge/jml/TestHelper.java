@@ -1,4 +1,4 @@
-package org.realityforge.jml.jml;
+package org.realityforge.jml;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +13,6 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
-import org.realityforge.jml.ChannelSpec;
 
 final class TestHelper
 {

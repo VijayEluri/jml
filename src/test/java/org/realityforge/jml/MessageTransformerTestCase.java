@@ -1,10 +1,9 @@
-package org.realityforge.jml.jml;
+package org.realityforge.jml;
 
 import java.net.URL;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import org.realityforge.jml.MessageTransformer;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 

@@ -1,8 +1,6 @@
-package org.realityforge.jml.jml;
+package org.realityforge.jml;
 
 import javax.jms.Message;
-import org.realityforge.jml.MessageUtil;
-import org.realityforge.jml.MessageVerifier;
 
 class TestMessageVerifier
   extends MessageVerifier
