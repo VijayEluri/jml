@@ -50,7 +50,7 @@ public final class ChannelSpec
     return isTopic() ? session.createTopic( getChannel() ) : session.createQueue( getChannel() );
   }
 
-  public static final ChannelSpec parseChannelSpec( final String channelName )
+  public static ChannelSpec parseChannelSpec( final String channelName )
   {
     if( null == channelName ) throw new NullPointerException( "channelName" );
     final String channel;
