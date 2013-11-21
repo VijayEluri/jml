@@ -7,8 +7,8 @@ import java.util.LinkedList;
 
 public class AbstractBrokerBasedTestCase
 {
-  private Connection m_connection;
-  private final LinkedList<Session> m_sessions = new LinkedList<Session>();
+  private Connection _connection;
+  private final LinkedList<Session> _sessions = new LinkedList<Session>();
 
   @BeforeSuite
   public void startupBroker()
@@ -28,24 +28,24 @@ public class AbstractBrokerBasedTestCase
   public void initConnection()
     throws Exception
   {
-    m_connection = TestHelper.createConnection();
-    m_connection.start();
+    _connection = TestHelper.createConnection();
+    _connection.start();
   }
 
   @AfterMethod
   public void shutdownConnection()
     throws Exception
   {
-    for( final Session session : m_sessions )
+    for( final Session session : _sessions )
     {
       session.close();
     }
-    m_sessions.clear();
-    if( null != m_connection )
+    _sessions.clear();
+    if( null != _connection )
     {
-      m_connection.stop();
-      m_connection.close();
-      m_connection = null;
+      _connection.stop();
+      _connection.close();
+      _connection = null;
     }
   }
 
@@ -59,16 +59,16 @@ public class AbstractBrokerBasedTestCase
     throws Exception
   {
     final Session session = getConnection().createSession( transacted, acknowledgeMode );
-    m_sessions.add( session );
+    _sessions.add( session );
     return session;
   }
 
   final Connection getConnection()
   {
-    if( null == m_connection )
+    if( null == _connection )
     {
-      throw new IllegalStateException( "null == m_connection" );
+      throw new IllegalStateException( "null == _connection" );
     }
-    return m_connection;
+    return _connection;
   }
 }

@@ -14,22 +14,22 @@ import javax.jms.Session;
 public final class MessageLink
   extends AbstractMessageEndpoint
 {
-  private ChannelSpec m_destination;
-  private MessageVerifier m_outputVerifier;
-  private MessageTransformer m_transformer;
-  private MessageProducer m_destinationProducer;
+  private ChannelSpec _destination;
+  private MessageVerifier _outputVerifier;
+  private MessageTransformer _transformer;
+  private MessageProducer _destinationProducer;
 
   /** Specify the destination channel. */
   public void setDestinationChannel( final String channelSpec )
   {
-    m_destination = ChannelSpec.parseChannelSpec( channelSpec );
+    _destination = ChannelSpec.parseChannelSpec( channelSpec );
   }
 
   /** Specify verifier that is invoked prior to sending message to the destination channel. */
   public void setOutputVerifier( final MessageVerifier outputVerifier )
   {
     ensureEditable();
-    m_outputVerifier = outputVerifier;
+    _outputVerifier = outputVerifier;
   }
 
   /**
@@ -39,13 +39,13 @@ public final class MessageLink
   public void setTransformer( final MessageTransformer transformer )
   {
     ensureEditable();
-    m_transformer = transformer;
+    _transformer = transformer;
   }
 
   @Override
   protected void preSubscribe( final Session session ) throws Exception
   {
-    m_destinationProducer = session.createProducer( m_destination.create( session ) );
+    _destinationProducer = session.createProducer( _destination.create( session ) );
   }
 
   @Override
@@ -53,13 +53,13 @@ public final class MessageLink
   {
     try
     {
-      if( null != m_destinationProducer ) m_destinationProducer.close();
+      if( null != _destinationProducer ) _destinationProducer.close();
     }
     catch( final JMSException e )
     {
       warning( "Closing destination producer", e );
     }
-    m_destinationProducer = null;
+    _destinationProducer = null;
   }
 
   @Override
@@ -68,7 +68,7 @@ public final class MessageLink
     final Message output;
     try
     {
-      if( null != m_transformer ) output = m_transformer.transformMessage( session, message );
+      if( null != _transformer ) output = _transformer.transformMessage( session, message );
       else output = message;
     }
     catch( final Exception e )
@@ -89,14 +89,14 @@ public final class MessageLink
   @Override
   protected void preSendMessageToDMQ( final Message message ) throws JMSException
   {
-    message.setStringProperty( "JMLDestinationChannel", m_destination.toSpec() );
+    message.setStringProperty( "JMLDestinationChannel", _destination.toSpec() );
   }
 
   private void send( final Message inMessage, final Message outMessage )
   {
     try
     {
-      if( null != m_outputVerifier ) m_outputVerifier.verifyMessage( outMessage );
+      if( null != _outputVerifier ) _outputVerifier.verifyMessage( outMessage );
     }
     catch( final Exception e )
     {
@@ -104,7 +104,7 @@ public final class MessageLink
     }
     try
     {
-      m_destinationProducer.send( outMessage,
+      _destinationProducer.send( outMessage,
                                   outMessage.getJMSDeliveryMode(),
                                   outMessage.getJMSPriority(),
                                   outMessage.getJMSExpiration() );
@@ -119,6 +119,6 @@ public final class MessageLink
     throws Exception
   {
     super.ensureValidConfig();
-    if( null == m_destination ) throw invalid( "destination channel not specified" );
+    if( null == _destination ) throw invalid( "destination channel not specified" );
   }
 }

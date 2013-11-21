@@ -78,11 +78,11 @@ public abstract class MessageTransformer
   private static class XslMessageTransformer
     extends MessageTransformer
   {
-    private final Transformer m_transformer;
+    private final Transformer _transformer;
 
     private XslMessageTransformer( final Transformer transformer )
     {
-      m_transformer = transformer;
+      _transformer = transformer;
     }
 
     @Override
@@ -106,7 +106,7 @@ public abstract class MessageTransformer
         final Source xmlSource = new StreamSource( new StringReader( textMessage.getText() ) );
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final Result result = new StreamResult( baos );
-        m_transformer.transform( xmlSource, result );
+        _transformer.transform( xmlSource, result );
         return baos.toString();
       }
       catch( final TransformerException te )

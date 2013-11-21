@@ -15,23 +15,23 @@ public final class ChannelSpec
   ///Prefix for topic type channels
   public static final String TOPIC_PREFIX = "topic://";
 
-  private final String m_channel;
-  private final boolean m_isTopic;
+  private final String _channel;
+  private final boolean _isTopic;
 
   ChannelSpec( final String channel, final boolean topic )
   {
-    this.m_channel = channel;
-    m_isTopic = topic;
+    _channel = channel;
+    _isTopic = topic;
   }
 
   public String getChannel()
   {
-    return m_channel;
+    return _channel;
   }
 
   public boolean isTopic()
   {
-    return m_isTopic;
+    return _isTopic;
   }
 
   public String toSpec()

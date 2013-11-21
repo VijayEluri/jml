@@ -90,13 +90,13 @@ public abstract class MessageVerifier
   private static class XmlMessageVerifier
     extends MessageVerifier
   {
-    private final String m_noMatchMessage;
-    private final Validator m_validator;
+    private final String _noMatchMessage;
+    private final Validator _validator;
 
     private XmlMessageVerifier( final String noMatchMessage, final Validator validator )
     {
-      m_noMatchMessage = noMatchMessage;
-      m_validator = validator;
+      _noMatchMessage = noMatchMessage;
+      _validator = validator;
     }
 
     public void verifyMessage( final Message message ) throws Exception
@@ -104,11 +104,11 @@ public abstract class MessageVerifier
       final TextMessage textMessage = castToType( message, TextMessage.class );
       try
       {
-        m_validator.validate( new StreamSource( new ByteArrayInputStream( textMessage.getText().getBytes() ) ) );
+        _validator.validate( new StreamSource( new ByteArrayInputStream( textMessage.getText().getBytes() ) ) );
       }
       catch( final Exception e )
       {
-        throw exceptionFor( message, "failed to match " + m_noMatchMessage + ".", e );
+        throw exceptionFor( message, "failed to match " + _noMatchMessage + ".", e );
       }
     }
   }
@@ -116,19 +116,19 @@ public abstract class MessageVerifier
   private static class RegexMessageVerifier
     extends MessageVerifier
   {
-    private final Pattern pattern;
+    private final Pattern _pattern;
 
     private RegexMessageVerifier( final Pattern pattern )
     {
-      this.pattern = pattern;
+      _pattern = pattern;
     }
 
     public void verifyMessage( final Message message ) throws Exception
     {
       final TextMessage textMessage = castToType( message, TextMessage.class );
-      if( !pattern.matcher( textMessage.getText() ).matches() )
+      if( !_pattern.matcher( textMessage.getText() ).matches() )
       {
-        throw exceptionFor( message, "failed to match pattern \"" + pattern.pattern() + "\".", null );
+        throw exceptionFor( message, "failed to match pattern \"" + _pattern.pattern() + "\".", null );
       }
     }
   }

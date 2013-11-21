@@ -34,29 +34,29 @@ public abstract class AbstractMessageEndpoint
   /// Logger used to log in the endpoint and subclasses.
   protected static final Logger LOG = Logger.getLogger( AbstractMessageEndpoint.class.getName() );
 
-  private String m_name;
-  private String m_subscriptionName;
-  private String m_selector;
-  private MessageVerifier m_inputVerifier;
-  private String m_dmqName;
-  private ChannelSpec m_source;
-  private boolean m_isFrozen;
+  private String _name;
+  private String _subscriptionName;
+  private String _selector;
+  private MessageVerifier _inputVerifier;
+  private String _dmqName;
+  private ChannelSpec _source;
+  private boolean _isFrozen;
 
-  private Session m_session;
-  private MessageConsumer m_sourceConsumer;
-  private MessageProducer m_dmqProducer;
+  private Session _session;
+  private MessageConsumer _sourceConsumer;
+  private MessageProducer _dmqProducer;
 
   /** Specify the name of the endpoint. Used during debugging. */
   public final void setName( final String name )
   {
     ensureEditable();
-    m_name = name;
+    _name = name;
   }
 
   /** Return the name of the endpoint. */
   public final String getName()
   {
-    return m_name;
+    return _name;
   }
 
   /**
@@ -74,27 +74,27 @@ public abstract class AbstractMessageEndpoint
       throw new IllegalStateException( "Channels supplied with subscriptions must be topics" );
     }
     ensureEditable();
-    m_source = ChannelSpec.parseChannelSpec( channelName );
-    m_subscriptionName = subscription;
-    m_selector = selector;
+    _source = ChannelSpec.parseChannelSpec( channelName );
+    _subscriptionName = subscription;
+    _selector = selector;
   }
 
   /** Return the specification for the source channel. */
   public ChannelSpec getSource()
   {
-    return m_source;
+    return _source;
   }
 
   /** Return the durable subscription name, if any. */
   public final String getSubscriptionName()
   {
-    return m_subscriptionName;
+    return _subscriptionName;
   }
 
   /** Return the selector string if any. */
   public String getSelector()
   {
-    return m_selector;
+    return _selector;
   }
 
   /**
@@ -105,13 +105,13 @@ public abstract class AbstractMessageEndpoint
   public final void setDmqName( final String dmqName )
   {
     ensureEditable();
-    m_dmqName = dmqName;
+    _dmqName = dmqName;
   }
 
   /** Return the dead message queue name, if any. */
   public final String getDmqName()
   {
-    return m_dmqName;
+    return _dmqName;
   }
 
   /**
@@ -122,7 +122,7 @@ public abstract class AbstractMessageEndpoint
   public final void setInputVerifier( final MessageVerifier inputVerifier )
   {
     ensureEditable();
-    m_inputVerifier = inputVerifier;
+    _inputVerifier = inputVerifier;
   }
 
   /**
@@ -137,32 +137,32 @@ public abstract class AbstractMessageEndpoint
     throws Exception
   {
     if( null == session ) throw invalid( "session must not be null" );
-    m_isFrozen = true;
+    _isFrozen = true;
     try
     {
       ensureValidConfig();
 
-      m_session = session;
+      _session = session;
 
-      final Destination inChannel = m_source.create( session );
-      final Destination dmq = ( null != m_dmqName ) ? m_session.createQueue( m_dmqName ) : null;
-      m_dmqProducer = ( null != dmq ) ? m_session.createProducer( dmq ) : null;
+      final Destination inChannel = _source.create( session );
+      final Destination dmq = ( null != _dmqName ) ? _session.createQueue( _dmqName ) : null;
+      _dmqProducer = ( null != dmq ) ? _session.createProducer( dmq ) : null;
 
       preSubscribe( session );
 
-      if( null != m_subscriptionName )
+      if( null != _subscriptionName )
       {
-        m_sourceConsumer = m_session.createDurableSubscriber( (Topic)inChannel, m_subscriptionName, m_selector, true );
+        _sourceConsumer = _session.createDurableSubscriber( (Topic)inChannel, _subscriptionName, _selector, true );
       }
       else
       {
-        m_sourceConsumer = m_session.createConsumer( inChannel, m_selector );
+        _sourceConsumer = _session.createConsumer( inChannel, _selector );
       }
-      m_sourceConsumer.setMessageListener( new EndpointMessageListener() );
+      _sourceConsumer.setMessageListener( new EndpointMessageListener() );
     }
     catch( final JMSException e )
     {
-      m_isFrozen = false;
+      _isFrozen = false;
       warning( "Error starting endpoint", e );
       stop();
       throw e;
@@ -175,37 +175,37 @@ public abstract class AbstractMessageEndpoint
   {
     try
     {
-      if( null != m_sourceConsumer ) m_sourceConsumer.close();
+      if( null != _sourceConsumer ) _sourceConsumer.close();
     }
     catch( final JMSException e )
     {
       warning( "Closing consumer", e );
     }
-    m_sourceConsumer = null;
+    _sourceConsumer = null;
 
     try
     {
-      if( null != m_dmqProducer ) m_dmqProducer.close();
+      if( null != _dmqProducer ) _dmqProducer.close();
     }
     catch( final JMSException e )
     {
       warning( "Closing producer for dmq", e );
     }
-    m_dmqProducer = null;
+    _dmqProducer = null;
 
     preSessionClose();
 
     try
     {
-      if( null != m_session ) m_session.close();
+      if( null != _session ) _session.close();
     }
     catch( final JMSException e )
     {
       warning( "Closing session", e );
     }
-    m_session = null;
+    _session = null;
 
-    m_isFrozen = false;
+    _isFrozen = false;
   }
 
   /**
@@ -254,7 +254,7 @@ public abstract class AbstractMessageEndpoint
   protected final void handleFailure( final Message inMessage, final String reason, final Throwable t )
   {
     info( reason, t );
-    if( null == m_dmqProducer )
+    if( null == _dmqProducer )
     {
       final String message = "Unable to handle message and no DMQ to send message to. Message: " + inMessage;
       warning( message, null );
@@ -263,7 +263,7 @@ public abstract class AbstractMessageEndpoint
     try
     {
       final Message message = createMessageToSendToDMQ( inMessage, reason );
-      m_dmqProducer.send( message,
+      _dmqProducer.send( message,
                           message.getJMSDeliveryMode(),
                           message.getJMSPriority(),
                           message.getJMSExpiration() );
@@ -283,7 +283,7 @@ public abstract class AbstractMessageEndpoint
    */
   protected final void ensureEditable()
   {
-    if( m_isFrozen ) throw invalid( "Attempting to edit active MessageLink" );
+    if( _isFrozen ) throw invalid( "Attempting to edit active MessageLink" );
   }
 
   /**
@@ -294,8 +294,8 @@ public abstract class AbstractMessageEndpoint
   protected void ensureValidConfig()
     throws Exception
   {
-    if( null == m_source ) throw invalid( "source not specified" );
-    else if( null != m_subscriptionName && !m_source.isTopic() )
+    if( null == _source ) throw invalid( "source not specified" );
+    else if( null != _subscriptionName && !_source.isTopic() )
     {
       throw invalid( "subscriptionName should only be specified for topics" );
     }
@@ -305,7 +305,7 @@ public abstract class AbstractMessageEndpoint
   protected final IllegalStateException invalid( final String message )
   {
     warning( message, null );
-    return new IllegalStateException( "MessageLink (" + m_name + ") invalid. Reason: " + message );
+    return new IllegalStateException( "MessageLink (" + _name + ") invalid. Reason: " + message );
   }
 
   /** Log an INFO level message. */
@@ -325,7 +325,7 @@ public abstract class AbstractMessageEndpoint
   {
     if( LOG.isLoggable( level ) )
     {
-      LOG.log( level, "MessageLink (" + m_name + ") Problem: " + message, t );
+      LOG.log( level, "MessageLink (" + _name + ") Problem: " + message, t );
     }
   }
 
@@ -337,7 +337,7 @@ public abstract class AbstractMessageEndpoint
     }
     try
     {
-      if( null != m_inputVerifier ) m_inputVerifier.verifyMessage( message );
+      if( null != _inputVerifier ) _inputVerifier.verifyMessage( message );
     }
     catch( final Exception e )
     {
@@ -346,7 +346,7 @@ public abstract class AbstractMessageEndpoint
     }
     try
     {
-      handleMessage( m_session, message );
+      handleMessage( _session, message );
     }
     catch( final Exception e )
     {
@@ -358,13 +358,13 @@ public abstract class AbstractMessageEndpoint
   private Message createMessageToSendToDMQ( final Message inMessage, final String reason )
     throws Exception
   {
-    final Message message = cloneMessageForDMQ( m_session, inMessage );
-    message.setStringProperty( "JMLMessageLink", m_name );
+    final Message message = cloneMessageForDMQ( _session, inMessage );
+    message.setStringProperty( "JMLMessageLink", _name );
     message.setStringProperty( "JMLFailureReason", reason );
-    message.setStringProperty( "JMLSourceChannel", m_source.toSpec() );
-    if( null != m_subscriptionName )
+    message.setStringProperty( "JMLSourceChannel", _source.toSpec() );
+    if( null != _subscriptionName )
     {
-      message.setStringProperty( "JMLInSubscriptionName", m_subscriptionName );
+      message.setStringProperty( "JMLInSubscriptionName", _subscriptionName );
     }
 
     final String messageType;

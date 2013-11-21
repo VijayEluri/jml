@@ -5,27 +5,27 @@ import javax.jms.Message;
 class TestMessageVerifier
   extends MessageVerifier
 {
-  private final int m_limit;
-  private long m_lastMessageTime;
+  private final int _limit;
+  private long _lastMessageTime;
 
   TestMessageVerifier( final int limit )
   {
-    m_limit = limit;
+    _limit = limit;
   }
 
   long getLastMessageTime()
   {
-    return m_lastMessageTime;
+    return _lastMessageTime;
   }
 
   @Override
   public void verifyMessage( final Message message ) throws Exception
   {
-    m_lastMessageTime = System.nanoTime();
+    _lastMessageTime = System.nanoTime();
     final int value = message.getIntProperty( TestHelper.HEADER_KEY );
-    if( value > m_limit )
+    if( value > _limit )
     {
-      throw MessageUtil.exceptionFor( message, "has header value = " + value + " that exceeds " + m_limit, null );
+      throw MessageUtil.exceptionFor( message, "has header value = " + value + " that exceeds " + _limit, null );
     }
   }
 }

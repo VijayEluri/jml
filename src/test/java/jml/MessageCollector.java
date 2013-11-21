@@ -16,13 +16,13 @@ final class MessageCollector
   private static final int MAX_MESSAGE_COUNT = 10;
   private static final long DEFAULT_WAIT = 100L;
 
-  private final LinkedBlockingQueue<Message> m_messages = new LinkedBlockingQueue<Message>( MAX_MESSAGE_COUNT );
+  private final LinkedBlockingQueue<Message> _messages = new LinkedBlockingQueue<Message>( MAX_MESSAGE_COUNT );
 
   @Override
   public void onMessage( final Message message )
   {
-    m_messages.add( message );
-    if( DEBUG ) System.out.println( "onMessage => Messages.size = " + m_messages.size() + " message = " + message );
+    _messages.add( message );
+    if( DEBUG ) System.out.println( "onMessage => Messages.size = " + _messages.size() + " message = " + message );
   }
 
   Collection<Message> expectMessageCount( final int expectedMessageCount )
@@ -41,7 +41,7 @@ final class MessageCollector
            ( ( now = System.currentTimeMillis() ) < start + maxWait ) )
     {
       final long waitTime = Math.max( 1, start + maxWait - now );
-      final Message message = m_messages.poll( waitTime, TimeUnit.MILLISECONDS );
+      final Message message = _messages.poll( waitTime, TimeUnit.MILLISECONDS );
       if( null != message ) results.add( message );
     }
     if( DEBUG ) System.out.println( "expectMessageCount => results.size = " + results.size() );
