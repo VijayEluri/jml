@@ -1,4 +1,4 @@
-package jml;
+package org.realityforge.jml;
 
 import java.util.Enumeration;
 import javax.jms.JMSException;

@@ -1,4 +1,4 @@
-package jml;
+package org.realityforge.jml;
 
 import java.util.logging.Level;
 import javax.jms.JMSException;

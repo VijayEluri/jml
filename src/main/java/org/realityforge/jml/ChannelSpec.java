@@ -1,4 +1,4 @@
-package jml;
+package org.realityforge.jml;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;

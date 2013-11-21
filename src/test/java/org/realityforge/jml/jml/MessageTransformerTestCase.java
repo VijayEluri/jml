@@ -1,11 +1,12 @@
-package jml;
+package org.realityforge.jml.jml;
 
-import static org.testng.Assert.*;
-import org.testng.annotations.Test;
 import java.net.URL;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import org.realityforge.jml.MessageTransformer;
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 public class MessageTransformerTestCase
   extends AbstractBrokerBasedTestCase

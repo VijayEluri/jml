@@ -1,12 +1,13 @@
-package jml;
+package org.realityforge.jml.jml;
 
-import static org.testng.Assert.*;
-import org.testng.annotations.Test;
 import java.net.URL;
 import java.util.regex.Pattern;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 import javax.xml.XMLConstants;
+import org.realityforge.jml.MessageVerifier;
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 public class MessageVerifierTestCase
   extends AbstractBrokerBasedTestCase

@@ -1,8 +1,5 @@
-package jml;
+package org.realityforge.jml.jml;
 
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-import static org.testng.Assert.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
@@ -12,6 +9,10 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import org.realityforge.jml.MessageLink;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 public class MessageLinkTestCase
   extends AbstractBrokerBasedTestCase

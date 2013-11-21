@@ -1,4 +1,4 @@
-package jml;
+package org.realityforge.jml;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;

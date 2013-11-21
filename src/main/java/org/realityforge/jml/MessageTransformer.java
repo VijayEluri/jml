@@ -1,4 +1,4 @@
-package jml;
+package org.realityforge.jml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;

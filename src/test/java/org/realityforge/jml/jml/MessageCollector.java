@@ -1,6 +1,4 @@
-package jml;
-
-import org.testng.Assert;
+package org.realityforge.jml.jml;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -8,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import org.testng.Assert;
 
 final class MessageCollector
   implements MessageListener
