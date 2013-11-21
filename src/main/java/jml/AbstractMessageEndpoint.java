@@ -351,7 +351,6 @@ public abstract class AbstractMessageEndpoint
     catch( final Exception e )
     {
       handleFailure( message, "Error handling message. Error: " + e, e );
-      return;
     }
   }
 
