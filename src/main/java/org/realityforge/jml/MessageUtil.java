@@ -7,7 +7,7 @@ import javax.jms.Message;
 /**
  * Class containing utility methods.
  */
-final class MessageUtil
+public final class MessageUtil
 {
   @SuppressWarnings( { "unchecked" } )
   static <T> T castToType( final Message message, final Class<T> type )
@@ -31,7 +31,7 @@ final class MessageUtil
     return new Exception( "Message with ID = " + message.getJMSMessageID() + " " + description, e );
   }
 
-  static void copyMessageHeaders( final Message from, final Message to )
+  public static void copyMessageHeaders( final Message from, final Message to )
     throws JMSException
   {
     //set the developer assigned headers
