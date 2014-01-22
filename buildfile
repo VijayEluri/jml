@@ -9,7 +9,7 @@ define 'jml' do
   compile.options.source = '1.6'
   compile.options.target = '1.6'
   compile.options.lint = 'all'
-  compile.with :jms
+  compile.with :javax_jms, :javax_ejb, :javax_annotation
 
   test.with :activemq_core, :commons_logging, :j2ee_management
   test.using :testng

@@ -27,7 +27,7 @@ import javax.jms.Topic;
  * <p>If an exception is raised during message processing then the endpoint will send a copy of
  * the message to the dead message queue if the dead message queue has been specified. Otherwise
  * the endpoint will rethrow the exception and rely on the message server to catch and log the
- * problem.</p> 
+ * problem.</p>
  */
 public abstract class AbstractMessageEndpoint
 {
@@ -279,7 +279,7 @@ public abstract class AbstractMessageEndpoint
 
   /**
    * Raise an exception unless endpoint is editable.
-   * Should be used in all mutators that modify configuration data. 
+   * Should be used in all mutators that modify configuration data.
    */
   protected final void ensureEditable()
   {
@@ -289,7 +289,7 @@ public abstract class AbstractMessageEndpoint
   /**
    * Raise an exception if the configuration data is not valid. This method is invoked
    * prior to starting the end point. Overide and invoke super if more configuration data
-   * is added to class. 
+   * is added to class.
    */
   protected void ensureValidConfig()
     throws Exception

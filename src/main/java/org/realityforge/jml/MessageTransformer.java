@@ -61,7 +61,7 @@ public abstract class MessageTransformer
 
   /**
    * Create a transformer that expects an XML formatted TextMessage and attempts to
-   * apply an XSLT transform. Uses the underlying javax.xml.transform API. 
+   * apply an XSLT transform. Uses the underlying javax.xml.transform API.
    *
    * @param url the url of XSLT sheet
    */
