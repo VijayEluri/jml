@@ -1,6 +1,7 @@
 require 'buildr/git_auto_version'
 require 'buildr/jacoco'
 require 'buildr/bnd'
+require 'buildr/gpg'
 
 PROVIDED_DEPS = [:javax_jms, :javax_ejb, :javax_annotation]
 TEST_DEPS = [:activemq_core, :commons_logging, :j2ee_management]
@@ -13,6 +14,11 @@ define 'jml' do
   compile.options.target = '1.6'
   compile.options.lint = 'all'
   compile.with PROVIDED_DEPS
+
+  pom.add_apache2_license
+  pom.add_github_project("realityforge/guiceyloops")
+  pom.add_developer('realityforge', "Peter Donald")
+  pom.provided_dependencies.concat PROVIDED_DEPS
 
   test.with TEST_DEPS
   test.using :testng
@@ -27,4 +33,5 @@ define 'jml' do
     bnd['-removeheaders'] = "Include-Resource,Bnd-LastModified,Created-By,Implementation-Title,Tool"
   end
   package(:sources)
+  package(:javadoc)
 end
