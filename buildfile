@@ -1,9 +1,9 @@
+require 'buildr/git_auto_version'
 require 'buildr/jacoco'
 require 'buildr/bnd'
 
 desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
-  project.version = "0.9.#{`git describe --tags --always`.strip}"
   project.group = 'org.realityforge.jml'
 
   compile.options.source = '1.6'
