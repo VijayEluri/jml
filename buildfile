@@ -2,6 +2,9 @@ require 'buildr/git_auto_version'
 require 'buildr/jacoco'
 require 'buildr/bnd'
 
+PROVIDED_DEPS = [:javax_jms, :javax_ejb, :javax_annotation]
+TEST_DEPS = [:activemq_core, :commons_logging, :j2ee_management]
+
 desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
   project.group = 'org.realityforge.jml'
@@ -9,9 +12,9 @@ define 'jml' do
   compile.options.source = '1.6'
   compile.options.target = '1.6'
   compile.options.lint = 'all'
-  compile.with :javax_jms, :javax_ejb, :javax_annotation
+  compile.with PROVIDED_DEPS
 
-  test.with :activemq_core, :commons_logging, :j2ee_management
+  test.with TEST_DEPS
   test.using :testng
   
   package(:bundle).tap do |bnd|
