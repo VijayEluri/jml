@@ -15,7 +15,7 @@ define 'jml' do
   compile.options.lint = 'all'
   compile.with PROVIDED_DEPS
 
-  pom.add_apache2_license
+  pom.add_apache_v2_license
   pom.add_github_project("realityforge/guiceyloops")
   pom.add_developer('realityforge', "Peter Donald")
   pom.provided_dependencies.concat PROVIDED_DEPS
