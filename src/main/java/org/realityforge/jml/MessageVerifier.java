@@ -133,4 +133,3 @@ public abstract class MessageVerifier
     }
   }
 }
-
