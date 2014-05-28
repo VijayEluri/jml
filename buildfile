@@ -2,6 +2,7 @@ require 'buildr/git_auto_version'
 require 'buildr/jacoco'
 require 'buildr/bnd'
 require 'buildr/gpg'
+require 'buildr/custom_pom'
 
 PROVIDED_DEPS = [:javax_jms, :javax_ejb, :javax_annotation]
 TEST_DEPS = [:activemq_core, :commons_logging, :j2ee_management]
