@@ -23,7 +23,7 @@ define 'jml' do
 
   test.with TEST_DEPS
   test.using :testng
-  
+
   package(:bundle).tap do |bnd|
     bnd['Export-Package'] = "org.realityforge.jml.*;version=#{version}"
     bnd['Import-Package'] = "javax.xml.*;resolution:=optional,*"
