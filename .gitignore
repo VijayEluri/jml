@@ -1,8 +1,8 @@
-/target
-/reports
-/_buildr.rb
-/jml.iws
-/jml.ipr
-/jml.iml
 /Gemfile.lock
+/_buildr.rb
+/jml.iml
+/jml.ipr
+/jml.iws
+/reports
+/target
 /tmp
