@@ -11,6 +11,8 @@ desc 'JML: Library to ease routing and transforming of JMS messages'
 define 'jml' do
   project.group = 'org.realityforge.jml'
 
+  project.version = ENV['PRODUCT_VERSION'] if ENV['PRODUCT_VERSION']
+
   compile.options.source = '1.6'
   compile.options.target = '1.6'
   compile.options.lint = 'all'
